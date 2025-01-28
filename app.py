@@ -1,6 +1,17 @@
+import os
+from datetime import datetime
+
+import psycopg2
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_mail import Mail, Message
+from yandex_cloud_ml_sdk import YCloudML
 
+from auth.db.utils import user_register, user_login, get_usernames, get_user_id
+from ml_backend.agents.chatter import Chatter
+from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -18,6 +29,19 @@ USERS = {
     "admin@example.com": {"username": "admin", "password": "password"},
     "test@test.test": {"username": "Каверин", "password": "1"}
 }
+PAID_GPT_MESSAGES = 3
+MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
+
+connection = psycopg2.connect(f"""
+    dbname=test
+    user=postgres
+    password='{os.getenv('DB_PASSWORD')}'
+""")
+
+sdk = YCloudML(
+    folder_id=os.getenv("FOLDER_ID"),
+    auth=os.getenv("YANDEXGPT_API_KEY"),
+)
 
 @app.route('/')
 def landing_page():
@@ -26,19 +50,22 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')  # Используем get для безопасности
+        username = request.form.get('username')
         password = request.form.get('password')
 
-        if not email or not password:
+        if not username or not password:
             flash("Все поля должны быть заполнены.", "danger")
             return render_template('login.html')
 
-        user = USERS.get(email)
+        username = user_login(connection, username, password)
+        user_id = get_user_id(connection, username)
 
-        if user and user['password'] == password:
-            session['email'] = email
-            session['username'] = user['username']
-            flash("Вы успешно вошли!", "success")
+        print(f"User: {username}")  # Отладочный вывод
+        if username:
+            session['username'] = username
+            print(user_id)
+            session['user_id'] = user_id
+            print("Redirecting to dashboard...")
             return redirect(url_for('dashboard'))
         else:
             flash("Неверный логин или пароль. Попробуйте снова.", "danger")
@@ -52,10 +79,16 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        if email in USERS:
-            flash("Этот email уже зарегистрирован.", "danger")
+        #TODO: Поменять логику с никнеймов на EMAIL!
+        usernames_from_db = get_usernames(connection)
+        usernames = [user[0] for user in usernames_from_db]
+
+        #TODO: Поменять сообщение с никнейм -> email
+        if username in usernames:
+            flash("Этот никнейм уже зарегистрирован.", "already_registered")
         else:
-            USERS[email] = {"username": username, "password": password}
+            # Заглушка, добавляется в БД только юзернейм!!!
+            user_register(connection, username)
             flash("Регистрация успешна! Вы можете войти.", "success")
             return redirect(url_for('login'))
     
@@ -82,32 +115,48 @@ def forgot_password():
     
     return render_template('forgot_password.html')
 
-@app.route('/dashboard', methods=['GET'])
+@app.route('/dashboard')
 def dashboard():
-    if 'email' not in session:
+    if 'username' not in session:
         return redirect(url_for('login'))
-    username = USERS.get(session['email'], {}).get('username', 'Пользователь')
-    return render_template('dashboard.html', username=username)
+
+    username = session['username']
+    user_id = get_user_id(connection, username)
+
+    chat_id = create_or_get_today_chat(connection, user_id)  # Получаем или создаём чат
+
+    # Передаём chat_id в шаблон
+    return render_template('dashboard.html', chat_id=chat_id)
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
+    print(session)
+    if 'user_id' not in session:
+        return jsonify({"status": "error", "message": "Необходимо войти в систему"})
+
     data = request.get_json()
-    user_message = data.get('message', '')
+    chat_id = data.get('chat_id')
+    content = data.get('message')
 
-    # Пример простой логики ответа
-    if "как дела" in user_message.lower():
-        reply = "У меня всё отлично, спасибо, что спросили!"
-    elif "куда пепя ляжет" in user_message.lower():
-        reply = 'туда сепя сядет...) Конечно интересно, что спросил. Что еще было за сегодня?'
-    else:
-        reply = "Это интересно! Расскажите подробнее."
+    if not chat_id or not content:
+        return jsonify({"status": "error", "message": "Неверные данные"})
 
-    return jsonify({"reply": reply})
+    add_user_message(connection, chat_id, content)
+
+    # Логика ответа нейронки тут
+    chat = get_chat_by_chat_id(connection, chat_id)
+
+    chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
+    chatter = Chatter(chatter_model)
+    new_message = chatter.generate_response(chat, (MAX_CHAT_LEN - len(chat) + 1) // 2)
+
+    add_assistant_message(connection, chat_id, new_message)
+
+    return jsonify({"status": "success", "reply": new_message})
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("Вы успешно вышли из системы.", "success")
     return redirect(url_for('landing_page'))
 
 if __name__ == '__main__':

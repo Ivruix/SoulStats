@@ -124,6 +124,8 @@
         <button onclick="sendMessage()">&#x1F3C3;</button>
     </div>
     <script>
+        const chatId = {{ chat_id }};  // Передаём chat_id из Flask
+
         // Функция для отправки сообщений
         function sendMessage() {
             const input = document.getElementById('messageInput');
@@ -151,19 +153,21 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: messageText })
+                body: JSON.stringify({ chat_id: chatId, message: messageText })
             })
             .then(response => response.json())
             .then(data => {
-                // Добавляем ответ ассистента в чат
-                const assistantMessage = document.createElement('div');
-                assistantMessage.classList.add('message', 'assistant');
-                assistantMessage.innerHTML = `
-                    <p>${data.reply}</p>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                `;
-                messagesDiv.appendChild(assistantMessage);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight; // Скроллим вниз
+                if (data.status === 'success') {
+                    // Добавляем ответ ассистента в чат
+                    const assistantMessage = document.createElement('div');
+                    assistantMessage.classList.add('message', 'assistant');
+                    assistantMessage.innerHTML = `
+                        <p>${data.reply}</p>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    `;
+                    messagesDiv.appendChild(assistantMessage);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Скроллим вниз
+                }
             })
             .catch(error => console.error('Ошибка:', error));
         }

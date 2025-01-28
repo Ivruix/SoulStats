@@ -54,10 +54,28 @@
             text-decoration: none;
             color: #008000;
         }
+        .already_registered {
+            color: #ff0000;
+            background-color: #ffe6e6;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Блок для вывода ошибки -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" width="100">
         <h1>Регистрация</h1>
         <form action="/register" method="post">

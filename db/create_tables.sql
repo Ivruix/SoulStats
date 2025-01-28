@@ -1,5 +1,5 @@
 CREATE TABLE user_data (
-  user_id integer PRIMARY KEY,
+  user_id serial PRIMARY KEY,
   username text
 );
 
@@ -51,3 +51,5 @@ ALTER TABLE message ADD FOREIGN KEY (chat_id) REFERENCES chat (chat_id);
 ALTER TABLE happiness_level ADD FOREIGN KEY (chat_id) REFERENCES chat (chat_id);
 
 ALTER TABLE main_emotion ADD FOREIGN KEY (chat_id) REFERENCES chat (chat_id);
+
+COMMIT
