@@ -4,9 +4,7 @@ from ml_backend.data_types.chat import Chat
 from ml_backend.data_types.emotion import Emotion
 from ml_backend.agents.emotion_analyzer import EmotionAnalyzer
 from ml_backend.agents.mood_analyzer import MoodAnalyzer
-
-PAID_GPT_MESSAGES = 3
-MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
+from ml_backend.agents.fact_extractor import FactExtractor
 
 
 def create_or_get_today_chat(conn, user_id):
@@ -55,7 +53,7 @@ def add_user_message(conn, chat_id, message):
     conn.commit()
 
 
-def analyze_chat(conn, sdk, chat_id):
+def analyze_chat(conn, sdk, chat_id, user_id):
     cur = conn.cursor()
 
     chat = get_chat_by_chat_id(conn, chat_id)
@@ -76,4 +74,12 @@ def analyze_chat(conn, sdk, chat_id):
         cur.execute(f"INSERT INTO main_emotion (chat_id, val) VALUES ({chat_id}, \'{emotion.string}\')")
         conn.commit()
 
-    # TODO: извлечение фактов и событий
+    # Извлечение фактов о пользователе
+    fact_extractor_model = sdk.models.completions("yandexgpt").configure(temperature=0.0)
+    fact_extractor = FactExtractor(fact_extractor_model)
+    facts = fact_extractor.extract(chat)
+    for fact in facts:
+        cur.execute(f"INSERT INTO fact (user_id, content) VALUES ({user_id}, \'{fact}\')")
+        conn.commit()
+
+    # TODO: извлечение событий

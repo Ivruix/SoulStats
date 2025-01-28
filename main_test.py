@@ -7,6 +7,10 @@ import os
 from ml_backend.db.utils import *
 
 
+PAID_GPT_MESSAGES = 3
+MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
+
+
 def have_a_chat(conn, sdk, user_id):
     chat_id = create_or_get_today_chat(conn, user_id)
 
@@ -24,7 +28,7 @@ def have_a_chat(conn, sdk, user_id):
     add_assistant_message(conn, chat_id, new_message)
 
     if len(chat) + 1 == MAX_CHAT_LEN:
-        analyze_chat(conn, sdk, chat_id)
+        analyze_chat(conn, sdk, chat_id, user_id)
         return
 
     user_response = input()
@@ -46,5 +50,3 @@ connection = psycopg2.connect(f"""
 """)
 
 have_a_chat(connection, gpt_sdk, 1)
-
-
