@@ -81,5 +81,3 @@ def analyze_chat(conn, sdk, chat_id, user_id):
     for fact in facts:
         cur.execute(f"INSERT INTO fact (user_id, content) VALUES ({user_id}, \'{fact}\')")
         conn.commit()
-
-    # TODO: извлечение событий
