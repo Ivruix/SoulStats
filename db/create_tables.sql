@@ -1,6 +1,9 @@
 CREATE TABLE user_data (
-  user_id serial PRIMARY KEY,
-  username text
+    id SERIAL PRIMARY KEY,
+    username text UNIQUE,
+    email text UNIQUE,
+    password_hash text NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE chat (

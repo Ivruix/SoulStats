@@ -1,20 +1,19 @@
 import os
-from datetime import datetime
 
 import psycopg2
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from yandex_cloud_ml_sdk import YCloudML
 
-from auth.db.utils import user_register, user_login, get_usernames, get_user_id
+from db.utils import user_register, user_login, get_usernames, get_user_id, get_user
 from ml_backend.agents.chatter import Chatter
 from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 # Настройки для почты
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -24,11 +23,6 @@ app.config['MAIL_USERNAME'] = 'thegoomba4@gmail.com'  # Укажите почт�
 app.config['MAIL_PASSWORD'] = 'test!'  # Укажите пароль от почты
 mail = Mail(app)
 
-# Заглушки данных пользователей
-USERS = {
-    "admin@example.com": {"username": "admin", "password": "password"},
-    "test@test.test": {"username": "Каверин", "password": "1"}
-}
 PAID_GPT_MESSAGES = 3
 MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
 
@@ -60,12 +54,9 @@ def login():
         username = user_login(connection, username, password)
         user_id = get_user_id(connection, username)
 
-        print(f"User: {username}")  # Отладочный вывод
         if username:
             session['username'] = username
-            print(user_id)
             session['user_id'] = user_id
-            print("Redirecting to dashboard...")
             return redirect(url_for('dashboard'))
         else:
             flash("Неверный логин или пароль. Попробуйте снова.", "danger")
@@ -99,19 +90,20 @@ def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
 
-        if email in USERS:
-            # Отправка письма с ссылкой для сброса пароля
-            reset_link = url_for('reset_password', _external=True)
-            msg = Message(
-                "Восстановление пароля - Умный дневник",
-                sender='your_email@gmail.com',
-                recipients=[email]
-            )
-            msg.body = f"Здравствуйте!\n\nДля сброса пароля перейдите по ссылке:\n{reset_link}"
-            mail.send(msg)
-            flash("Ссылка для восстановления пароля отправлена на ваш email.", "info")
-        else:
-            flash("Пользователь с таким email не найден.", "danger")
+#TODO: Реализовать сброс пароля
+        # if email in USERS:
+        #     # Отправка письма с ссылкой для сброса пароля
+        #     reset_link = url_for('reset_password', _external=True)
+        #     msg = Message(
+        #         "Восстановление пароля - Умный дневник",
+        #         sender='your_email@gmail.com',
+        #         recipients=[email]
+        #     )
+        #     msg.body = f"Здравствуйте!\n\nДля сброса пароля перейдите по ссылке:\n{reset_link}"
+        #     mail.send(msg)
+        #     flash("Ссылка для восстановления пароля отправлена на ваш email.", "info")
+        # else:
+        #     flash("Пользователь с таким email не найден.", "danger")
     
     return render_template('forgot_password.html')
 
@@ -122,15 +114,14 @@ def dashboard():
 
     username = session['username']
     user_id = get_user_id(connection, username)
+    chat_id = create_or_get_today_chat(connection, user_id)
 
-    chat_id = create_or_get_today_chat(connection, user_id)  # Получаем или создаём чат
-
-    # Передаём chat_id в шаблон
-    return render_template('dashboard.html', chat_id=chat_id)
+    return render_template('dashboard.html',
+                         chat_id=chat_id,
+                         username=username)
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
-    print(session)
     if 'user_id' not in session:
         return jsonify({"status": "error", "message": "Необходимо войти в систему"})
 
@@ -153,6 +144,25 @@ def send_message():
     add_assistant_message(connection, chat_id, new_message)
 
     return jsonify({"status": "success", "reply": new_message})
+
+
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    # Получаем данные пользователя из БД
+    user_data = get_user(connection, user_id)
+
+    if not user_data:
+        flash("Пользователь не найден.", "danger")
+        return redirect(url_for('dashboard'))
+
+    return render_template('profile.html',
+                           user_id=user_data[0],
+                           username=user_data[1])
 
 @app.route('/logout')
 def logout():

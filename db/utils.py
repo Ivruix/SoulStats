@@ -43,3 +43,14 @@ def get_user_id(conn, username):
         return None
 
     return id[0]
+
+def get_user(conn, user_id):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * 
+        FROM user_data 
+        WHERE user_id = %s
+    """, (user_id,))
+    user_data = cur.fetchone()
+
+    return user_data

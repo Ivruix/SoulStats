@@ -109,7 +109,10 @@
 <body>
     <header>
         <h1>Диалог с ассистентом ({{ username }})</h1>
-        <button onclick="window.location.href='/logout'">Выйти</button>
+        <div>
+            <button onclick="window.location.href='/profile'" style="margin-right: 10px;">Профиль</button>
+            <button onclick="window.location.href='/logout'">Выйти</button>
+        </div>
     </header>
     <main>
         <div class="messages" id="messages">
