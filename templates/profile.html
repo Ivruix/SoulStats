@@ -68,5 +68,11 @@
         </div>
         <a href="/dashboard" class="back-btn">Вернуться в чат</a>
     </div>
+    <script>
+        const token = "{{ token }}";
+        if (token) {
+            localStorage.setItem("token", token);
+        }
+    </script>
 </body>
 </html>

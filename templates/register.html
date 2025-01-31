@@ -88,5 +88,17 @@
             <a href="/login">Войти в аккаунт</a>
         </div>
     </div>
+    <script>
+        // Пример сохранения токена после входа
+        localStorage.setItem("token", response.data.token);
+
+        // Пример добавления токена в заголовки запросов
+        fetch("/dashboard", {
+        method: "GET",
+        headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+        });
+    </script>
 </body>
 </html>

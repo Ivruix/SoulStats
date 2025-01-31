@@ -109,10 +109,8 @@
 <body>
     <header>
         <h1>Диалог с ассистентом ({{ username }})</h1>
-        <div>
-            <button onclick="window.location.href='/profile'" style="margin-right: 10px;">Профиль</button>
-            <button onclick="window.location.href='/logout'">Выйти</button>
-        </div>
+        <button onclick="window.location.href='/profile'">Профиль</button>
+        <button onclick="window.location.href='/logout'">Выйти</button>
     </header>
     <main>
         <div class="messages" id="messages">
@@ -127,7 +125,14 @@
         <button onclick="sendMessage()">&#x1F3C3;</button>
     </div>
     <script>
-        const chatId = {{ chat_id }};  // Передаём chat_id из Flask
+        // Сохраняем токен в localStorage, если он передан
+        const token = "{{ token }}";
+        if (token) {
+            localStorage.setItem("token", token);
+        }
+
+        // Получаем chat_id из шаблона
+        const chatId = {{ chat_id }};
 
         // Функция для отправки сообщений
         function sendMessage() {
@@ -154,11 +159,20 @@
             fetch('/send-message', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`  // Используем токен из localStorage
                 },
-                body: JSON.stringify({ chat_id: chatId, message: messageText })
+                body: JSON.stringify({
+                    chat_id: chatId,  // Используем реальный chat_id
+                    message: messageText
+                })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
                     // Добавляем ответ ассистента в чат
@@ -172,7 +186,10 @@
                     messagesDiv.scrollTop = messagesDiv.scrollHeight; // Скроллим вниз
                 }
             })
-            .catch(error => console.error('Ошибка:', error));
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке сообщения');
+            });
         }
 
         // Обработка нажатия клавиши Enter

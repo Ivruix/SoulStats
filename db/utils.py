@@ -3,14 +3,17 @@ import os
 import psycopg2
 
 
-def user_register(conn, username):
+def register_user(conn, username, email, password_hash):
     cur = conn.cursor()
-
-    # Добавляем юзернейм в таблицу
-    cur.execute(f"INSERT INTO user_data (username) VALUES ('{username}')")
+    cur.execute("""
+        INSERT INTO user_data (username, email, password_hash)
+        VALUES (%s, %s, %s)
+        RETURNING user_id
+    """, (username, email, password_hash))
+    user_id = cur.fetchone()[0]
     conn.commit()
+    cur.close()
     return True
-
 
 def user_login(conn, username, password):
     cur = conn.cursor()
@@ -47,10 +50,19 @@ def get_user_id(conn, username):
 def get_user(conn, user_id):
     cur = conn.cursor()
     cur.execute("""
-        SELECT * 
+        SELECT user_id, username, password_hash
         FROM user_data 
         WHERE user_id = %s
     """, (user_id,))
     user_data = cur.fetchone()
-
     return user_data
+
+def user_exist(conn, email, username):
+    # Проверяем, что пользователь с таким email или username не существует
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM user_data WHERE email = %s OR username = %s", (email, username))
+    existing_user = cur.fetchone()
+
+    if existing_user:
+        return True
+    return False
