@@ -12,7 +12,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("JWT_SECRET")  # Секретный ключ для подписи токенов
 ALGORITHM = "HS256"  # Алгоритм подписи
 
-def create_jwt_token(user_id, username, chat_id):
+def create_jwt_token(user_id, username, chat_id=0):
     """Создает JWT токен для пользователя."""
     payload = {
         "user_id": user_id,
@@ -36,13 +36,17 @@ def decode_jwt_token(token):
 def jwt_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.headers.get("Authorization")
+        token = request.headers.get("Authorization") or request.args.get("token")
         if not token:
-            return jsonify({"error": "Токен отсутствует"}), 401
+            return jsonify({"error": "No token"}), 401
 
         try:
-            token = token.split(" ")[1]
-            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            # Убираем "Bearer " из заголовка (если есть)
+            if token.startswith("Bearer "):
+                token = token.split(" ")[1]
+
+            # Декодируем токен
+            payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
             request.user_id = payload["user_id"]
             request.username = payload["username"]
         except jwt.ExpiredSignatureError:

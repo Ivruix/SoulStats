@@ -124,8 +124,10 @@
         </div>
     </div>
     <script>
-        // Пример сохранения токена после входа
-        localStorage.setItem("token", response.data.token);
+        const token = "{{ token }}";
+        if (token) {
+            localStorage.setItem("token", token);
+        }
 
         // Пример добавления токена в заголовки запросов
         fetch("/dashboard", {

@@ -109,7 +109,7 @@
 <body>
     <header>
         <h1>Диалог с ассистентом ({{ username }})</h1>
-        <button onclick="window.location.href='/profile'">Профиль</button>
+        <button onclick="goToProfile()">Профиль</button>
         <button onclick="window.location.href='/logout'">Выйти</button>
     </header>
     <main>
@@ -127,6 +127,7 @@
     <script>
         // Сохраняем токен в localStorage, если он передан
         const token = "{{ token }}";
+        console.log(token)
         if (token) {
             localStorage.setItem("token", token);
         }
@@ -191,7 +192,16 @@
                 alert('Произошла ошибка при отправке сообщения');
             });
         }
-
+        function goToProfile() {
+            const token = localStorage.getItem("token");
+            if (token) {
+                // Переходим на страницу профиля с токеном
+                window.location.href = `/profile?token=${token}`;
+            } else {
+                // Если токена нет, перенаправляем на страницу входа
+                window.location.href = "/login";
+            }
+        }
         // Обработка нажатия клавиши Enter
         function handleKeyPress(event) {
             if (event.key === 'Enter') {

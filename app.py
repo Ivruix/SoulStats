@@ -148,7 +148,7 @@ def dashboard():
 
     if not token:
         # Если токен не передан, проверяем его в куках или localStorage (на фронтенде)
-        return render_template('dashboard.html', token=None)
+        return redirect(url_for('login'))
 
     # Декодируем токен
     payload = decode_jwt_token(token)
@@ -180,9 +180,6 @@ def send_message():
     if not chat_id or not content:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
 
-    # Получаем user_id из JWT токена
-    user_id = request.user_id
-
     # Добавляем сообщение пользователя в базу данных
     add_user_message(connection, chat_id, content)
 
@@ -200,17 +197,30 @@ def send_message():
     return jsonify({"status": "success", "reply": new_message})
 
 @app.route('/profile')
-@jwt_required
+@jwt_required  # Проверяем JWT токен
 def profile():
-    # Получаем данные из запроса
-    data = request.get_json()
-    if not data:
-        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+    # Получаем user_id из JWT токена
+    print(1)
+    user_id = request.user_id
 
-    username = data.get('username')
-    user_id = data.get('user_id')
+    # Получаем данные пользователя из базы данных
+    cur = connection.cursor()
+    cur.execute("SELECT id, username, created_at FROM user_data WHERE id = %s", (user_id,))
+    user_data = cur.fetchone()
+    cur.close()
 
-    return render_template('profile.html', user_id=user_id, username=username)
+    if not user_data:
+        flash("Пользователь не найден.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Распаковываем данные
+    user_id, username, created_at = user_data
+
+    # Передаем данные в шаблон
+    return render_template('profile.html',
+                         user_id=user_id,
+                         username=username,
+                         registration_date=created_at.strftime("%d.%m.%Y %H:%M"))
 
 @app.route('/logout')
 def logout():
