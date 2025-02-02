@@ -46,7 +46,7 @@ def jwt_required(f):
                 token = token.split(" ")[1]
 
             # Декодируем токен
-            payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
+            payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
             request.user_id = payload["user_id"]
             request.username = payload["username"]
         except jwt.ExpiredSignatureError:
