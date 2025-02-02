@@ -87,5 +87,5 @@ def get_facts_by_user(conn, user_id):
     cur = conn.cursor()
 
     cur.execute(f"SELECT content FROM fact WHERE user_id = {user_id}")
-    facts = [fact[0] for fact in cur.featchall()]
+    facts = [fact[0] for fact in cur.fetchall()]
     return facts

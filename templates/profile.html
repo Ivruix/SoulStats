@@ -36,6 +36,15 @@
             font-weight: bold;
             color: #666;
         }
+        .facts-list {
+            margin-top: 10px;
+        }
+        .fact-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: #e6ffe6;
+            border-radius: 5px;
+        }
         .back-btn {
             display: block;
             width: 200px;
@@ -46,6 +55,7 @@
             color: white;
             text-decoration: none;
             border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -62,8 +72,16 @@
                 {{ user_id }}
             </div>
             <div>
-                <span class="label">Дата регистрации:</span><br>
-
+                <span class="label">Факты:</span><br>
+                <div class="facts-list">
+                    {% if facts %}
+                        {% for fact in facts %}
+                            <div class="fact-item">{{ fact }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Фактов пока нет.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
         <a onclick="goToDashboard()" class="back-btn">Вернуться в чат</a>
@@ -73,7 +91,8 @@
         if (token) {
             localStorage.setItem("token", token);
         }
-            function goToDashboard() {
+
+        function goToDashboard() {
             const token = localStorage.getItem("token");
             if (token) {
                 // Переходим на страницу профиля с токеном

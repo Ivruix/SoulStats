@@ -9,7 +9,8 @@ from yandex_cloud_ml_sdk import YCloudML
 
 from db.utils import register_user, user_login, get_usernames, get_user_id, get_user
 from ml_backend.agents.chatter import Chatter
-from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, analyze_chat
+from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
+    analyze_chat, get_facts_by_user
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
 load_dotenv()
@@ -204,7 +205,6 @@ def send_message():
 @jwt_required  # Проверяем JWT токен
 def profile():
     # Получаем user_id из JWT токена
-    print(1)
     user_id = request.user_id
 
     # Получаем данные пользователя из базы данных
@@ -217,11 +217,13 @@ def profile():
     # Распаковываем данные
     user_id, username, created_at = user_data
 
+    facts = get_facts_by_user(connection, user_id)
+
     # Передаем данные в шаблон
     return render_template('profile.html',
                          user_id=user_id,
                          username=username,
-                         registration_date=created_at)
+                         facts=facts)
 
 @app.route('/logout')
 def logout():
