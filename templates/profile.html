@@ -73,6 +73,16 @@
         if (token) {
             localStorage.setItem("token", token);
         }
+            function goToDashboard() {
+            const token = localStorage.getItem("token");
+            if (token) {
+                // Переходим на страницу профиля с токеном
+                window.location.href = `/profile?token=${token}`;
+            } else {
+                // Если токена нет, перенаправляем на страницу входа
+                window.location.href = "/login";
+            }
+        }
     </script>
 </body>
 </html>

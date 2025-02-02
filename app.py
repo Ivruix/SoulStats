@@ -204,10 +204,7 @@ def profile():
     user_id = request.user_id
 
     # Получаем данные пользователя из базы данных
-    cur = connection.cursor()
-    cur.execute("SELECT id, username, created_at FROM user_data WHERE id = %s", (user_id,))
-    user_data = cur.fetchone()
-    cur.close()
+    user_data = get_user(connection, user_id)
 
     if not user_data:
         flash("Пользователь не найден.", "danger")
@@ -220,7 +217,7 @@ def profile():
     return render_template('profile.html',
                          user_id=user_id,
                          username=username,
-                         registration_date=created_at.strftime("%d.%m.%Y %H:%M"))
+                         registration_date=created_at)
 
 @app.route('/logout')
 def logout():
