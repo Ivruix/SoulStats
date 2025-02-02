@@ -144,6 +144,8 @@
 
         // Получаем chat_id из шаблона
         const chatId = {{ chat_id }};
+        const userId = {{ user_id }};
+
 
         // Функция для отправки сообщений
         function sendMessage() {
@@ -175,7 +177,8 @@
                 },
                 body: JSON.stringify({
                     chat_id: chatId,  // Используем реальный chat_id
-                    message: messageText
+                    message: messageText,
+                    user_id: userId
                 })
             })
             .then(response => {

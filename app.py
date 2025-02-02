@@ -163,7 +163,7 @@ def dashboard():
     chat_id = payload['chat_id']
 
     # Передаем токен и данные в шаблон
-    return render_template('dashboard.html', chat_id=chat_id, username=username, token=token)
+    return render_template('dashboard.html', chat_id=chat_id, username=username, user_id=user_id, token=token)
 
 @app.route('/send-message', methods=['POST'])
 @jwt_required  # Проверяем JWT токен
@@ -172,7 +172,7 @@ def send_message():
     data = request.get_json()
     if not data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
-
+    print(data)
     chat_id = data.get('chat_id')
     content = data.get('message')
 
