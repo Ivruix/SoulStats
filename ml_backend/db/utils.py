@@ -81,3 +81,11 @@ def analyze_chat(conn, sdk, chat_id, user_id):
     for fact in facts:
         cur.execute(f"INSERT INTO fact (user_id, content) VALUES ({user_id}, \'{fact}\')")
         conn.commit()
+
+
+def get_facts_by_user(conn, user_id):
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT content FROM fact WHERE user_id = {user_id}")
+    facts = [fact[0] for fact in cur.featchall()]
+    return facts
