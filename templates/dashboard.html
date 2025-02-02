@@ -24,44 +24,50 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 98%;
+            width: 100%;
             z-index: 1000;
         }
         header h1 {
             margin: 0;
             font-size: 1.2rem;
         }
-        header button {
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            margin-right: 30px;
+        }
+        .header-buttons button {
             background-color: white;
             color: #008000;
             border: none;
-            padding: 1rem 10px;
+            padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 1rem;
         }
-        header button:hover {
+        .header-buttons button:hover {
             background-color: #f0f0f0;
         }
         main {
             flex: 1;
             display: flex;
             flex-direction: column;
-            margin-top: 60px; /* Учитываем высоту header */
-            margin-bottom: 70px; /* Учитываем высоту поля ввода */
-            overflow-y: auto; /* Добавляем прокрутку */
+            margin-top: 60px;
+            margin-bottom: 70px;
+            overflow-y: auto;
+            padding: 10px;
         }
         .messages {
             flex: 1;
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 10px;
-            margin: 10px 20px;
         }
         .message {
             margin: 10px 0;
             padding: 10px;
-            border: 1px solid #ccc;
             border-radius: 5px;
+            max-width: 100%;
         }
         .message.user {
             align-self: flex-end;
@@ -84,13 +90,14 @@
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 98%;
+            width: 100%;
         }
         .input-container input {
             flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 10px;
+            font-size: 1rem;
         }
         .input-container button {
             background-color: #008000;
@@ -100,6 +107,7 @@
             border-radius: 50%;
             margin-left: 10px;
             cursor: pointer;
+            font-size: 1.2rem;
         }
         .input-container button:hover {
             background-color: #005f00;
@@ -109,8 +117,10 @@
 <body>
     <header>
         <h1>Диалог с ассистентом ({{ username }})</h1>
-        <button onclick="goToProfile()">Профиль</button>
-        <button onclick="window.location.href='/logout'">Выйти</button>
+        <div class="header-buttons">
+            <button onclick="goToProfile()">Профиль</button>
+            <button onclick="window.location.href='/logout'">Выйти</button>
+        </div>
     </header>
     <main>
         <div class="messages" id="messages">
@@ -122,27 +132,13 @@
     </main>
     <div class="input-container">
         <input id="messageInput" type="text" placeholder="Введите сообщение..." onkeydown="handleKeyPress(event)">
-        <button onclick="sendMessage()">&#x1F3C3;</button>
+        <button onclick="sendMessage()">&#x1F4AC;</button>
     </div>
     <script>
-        // Сохраняем токен в localStorage, если он передан
-        const token = "{{ token }}";
-        console.log(token)
-        if (token) {
-            localStorage.setItem("token", token);
-        }
-
-        // Получаем chat_id из шаблона
-        const chatId = {{ chat_id }};
-
-        // Функция для отправки сообщений
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const messageText = input.value.trim();
-
             if (messageText === '') return;
-
-            // Добавляем сообщение пользователя в чат
             const messagesDiv = document.getElementById('messages');
             const userMessage = document.createElement('div');
             userMessage.classList.add('message', 'user');
@@ -152,57 +148,12 @@
             `;
             messagesDiv.appendChild(userMessage);
             input.value = '';
-
-            // Скроллим вниз
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-            // Отправляем сообщение на сервер
-            fetch('/send-message', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`  // Используем токен из localStorage
-                },
-                body: JSON.stringify({
-                    chat_id: chatId,  // Используем реальный chat_id
-                    message: messageText
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Ошибка сети');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    // Добавляем ответ ассистента в чат
-                    const assistantMessage = document.createElement('div');
-                    assistantMessage.classList.add('message', 'assistant');
-                    assistantMessage.innerHTML = `
-                        <p>${data.reply}</p>
-                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                    `;
-                    messagesDiv.appendChild(assistantMessage);
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Скроллим вниз
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                alert('Произошла ошибка при отправке сообщения');
-            });
         }
         function goToProfile() {
             const token = localStorage.getItem("token");
-            if (token) {
-                // Переходим на страницу профиля с токеном
-                window.location.href = `/profile?token=${token}`;
-            } else {
-                // Если токена нет, перенаправляем на страницу входа
-                window.location.href = "/login";
-            }
+            window.location.href = token ? `/profile?token=${token}` : "/login";
         }
-        // Обработка нажатия клавиши Enter
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
