@@ -90,7 +90,7 @@
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 100%;
+            width: 99%;
         }
         .input-container input {
             flex: 1;
@@ -135,10 +135,24 @@
         <button onclick="sendMessage()">&#x1F4AC;</button>
     </div>
     <script>
+        // Сохраняем токен в localStorage, если он передан
+        const token = "{{ token }}";
+        console.log(token)
+        if (token) {
+            localStorage.setItem("token", token);
+        }
+
+        // Получаем chat_id из шаблона
+        const chatId = {{ chat_id }};
+
+        // Функция для отправки сообщений
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const messageText = input.value.trim();
+
             if (messageText === '') return;
+
+            // Добавляем сообщение пользователя в чат
             const messagesDiv = document.getElementById('messages');
             const userMessage = document.createElement('div');
             userMessage.classList.add('message', 'user');
@@ -148,12 +162,57 @@
             `;
             messagesDiv.appendChild(userMessage);
             input.value = '';
+
+            // Скроллим вниз
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Отправляем сообщение на сервер
+            fetch('/send-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`  // Используем токен из localStorage
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,  // Используем реальный chat_id
+                    message: messageText
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Добавляем ответ ассистента в чат
+                    const assistantMessage = document.createElement('div');
+                    assistantMessage.classList.add('message', 'assistant');
+                    assistantMessage.innerHTML = `
+                        <p>${data.reply}</p>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    `;
+                    messagesDiv.appendChild(assistantMessage);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Скроллим вниз
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке сообщения');
+            });
         }
         function goToProfile() {
             const token = localStorage.getItem("token");
-            window.location.href = token ? `/profile?token=${token}` : "/login";
+            if (token) {
+                // Переходим на страницу профиля с токеном
+                window.location.href = `/profile?token=${token}`;
+            } else {
+                // Если токена нет, перенаправляем на страницу входа
+                window.location.href = "/login";
+            }
         }
+        // Обработка нажатия клавиши Enter
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
