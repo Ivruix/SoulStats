@@ -1,107 +1,45 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль пользователя</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .profile-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #008000;
-            text-align: center;
-        }
-        .profile-info {
-            margin: 20px 0;
-        }
-        .profile-info div {
-            margin: 15px 0;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .label {
-            font-weight: bold;
-            color: #666;
-        }
-        .facts-list {
-            margin-top: 10px;
-        }
-        .fact-item {
-            margin: 5px 0;
-            padding: 5px;
-            background: #e6ffe6;
-            border-radius: 5px;
-        }
-        .back-btn {
-            display: block;
-            width: 200px;
-            margin: 20px auto;
-            padding: 10px;
-            text-align: center;
-            background: #008000;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div class="profile-container">
-        <h1>Профиль пользователя</h1>
-        <div class="profile-info">
-            <div>
-                <span class="label">Имя пользователя:</span><br>
-                {{ username }}
+{% extends "base.html" %}
+{% block title %}Профиль пользователя{% endblock %}
+{% block content %}
+<div style="max-width: 600px; width: 100%;">
+    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; text-align: center;">Профиль пользователя</h2>
+    <div style="background: #25253a; padding: 30px; border-radius: 15px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);">
+        <div style="margin: 20px 0;">
+            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
+                <span style="font-weight: 500; color: #a0a0c0;">Имя пользователя:</span><br>{{ username }}
             </div>
-            <div>
-                <span class="label">ID:</span><br>
-                {{ user_id }}
+            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
+                <span style="font-weight: 500; color: #a0a0c0;">ID:</span><br>{{ user_id }}
             </div>
-            <div>
-                <span class="label">Факты:</span><br>
-                <div class="facts-list">
+            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
+                <span style="font-weight: 500; color: #a0a0c0;">Факты:</span><br>
+                <div style="margin-top: 10px;">
                     {% if facts %}
                         {% for fact in facts %}
-                            <div class="fact-item">{{ fact }}</div>
+                            <div style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px;">{{ fact }}</div>
                         {% endfor %}
                     {% else %}
-                        <p>Фактов пока нет.</p>
+                        <p style="color: #a0a0c0;">Фактов пока нет.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
-        <a onclick="goToDashboard()" class="back-btn">Вернуться в чат</a>
+        <a onclick="goToDashboard()" style="display: block; width: 200px; margin: 20px auto; padding: 12px; text-align: center; background: #4a90e2; color: #ffffff; text-decoration: none; border-radius: 25px; cursor: pointer; transition: background 0.3s ease;">Вернуться в чат</a>
     </div>
-    <script>
-        const token = "{{ token }}";
-        if (token) {
-            localStorage.setItem("token", token);
-        }
+</div>
+<script>
+    const token = "{{ token }}";
+    if (token) {
+        localStorage.setItem("token", token);
+    }
 
-        function goToDashboard() {
-            const token = localStorage.getItem("token");
-            if (token) {
-                // Переходим на страницу профиля с токеном
-                window.location.href = `/dashboard?token=${token}`;
-            } else {
-                // Если токена нет, перенаправляем на страницу входа
-                window.location.href = "/login";
-            }
+    function goToDashboard() {
+        const token = localStorage.getItem("token");
+        if (token) {
+            window.location.href = `/dashboard?token=${token}`;
+        } else {
+            window.location.href = "/login";
         }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}

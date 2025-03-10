@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mail import Mail
 from yandex_cloud_ml_sdk import YCloudML
 
-from db.utils import register_user, user_login, get_usernames, get_user_id, get_user
+from db.utils import register_user, user_login, get_usernames, get_user_id, get_user, get_all_messages
 from ml_backend.agents.chatter import Chatter
 from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
     analyze_chat, get_facts_by_user
@@ -40,9 +40,11 @@ sdk = YCloudML(
     auth=os.getenv("YANDEXGPT_API_KEY"),
 )
 
+
 @app.route('/')
 def landing_page():
     return render_template('landing.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -79,6 +81,7 @@ def login():
         return redirect(url_for('dashboard', token=token))
 
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -120,12 +123,13 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
 
-#TODO: Реализовать сброс пароля
+        # TODO: Реализовать сброс пароля
         # if email in USERS:
         #     # Отправка письма с ссылкой для сброса пароля
         #     reset_link = url_for('reset_password', _external=True)
@@ -139,8 +143,9 @@ def forgot_password():
         #     flash("Ссылка для восстановления пароля отправлена на ваш email.", "info")
         # else:
         #     flash("Пользователь с таким email не найден.", "danger")
-    
+
     return render_template('forgot_password.html')
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -156,24 +161,51 @@ def dashboard():
     if not payload:
         flash("Неверный или истёкший токен. Пожалуйста, войдите снова.", "danger")
         return redirect(url_for('login'))
-    print(payload)
 
     # Получаем данные пользователя из токена
     username = payload['username']
     user_id = payload['user_id']
     chat_id = payload['chat_id']
 
-    # Передаем токен и данные в шаблон
-    return render_template('dashboard.html', chat_id=chat_id, username=username, user_id=user_id, token=token)
+    # Получаем список чатов пользователя
+    cur = connection.cursor()
+    cur.execute("SELECT chat_id, created_at FROM chat WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
+    chats = cur.fetchall()
+    cur.close()
+
+    # Форматируем даты для отображения
+    chats = [{"chat_id": chat[0], "created_at": chat[1].strftime("%Y-%m-%d")} for chat in chats]
+
+    # Передаем токен, данные и список чатов в шаблон
+    return render_template('dashboard.html', chat_id=chat_id, username=username, user_id=user_id, token=token,
+                           chats=chats)
+
+
+@app.route('/get-messages/<int:chat_id>', methods=['GET'])
+@jwt_required
+def get_messages(chat_id):
+    # Получаем сообщения для указанного chat_id
+    messages = get_all_messages(connection, chat_id)
+
+    # Форматируем сообщения для ответа
+    messages = [{
+        "message_id": msg[0],
+        "chat_id": msg[1],
+        "created_at": msg[2].strftime("%H:%M"),
+        "by_user": msg[3],
+        "content": msg[4]
+    } for msg in messages]
+
+    return jsonify({"status": "success", "messages": messages})
+
 
 @app.route('/send-message', methods=['POST'])
-@jwt_required  # Проверяем JWT токен
+@jwt_required
 def send_message():
     # Получаем данные из запроса
     data = request.get_json()
     if not data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
-    print(data)
     chat_id = data.get('chat_id')
     content = data.get('message')
     user_id = data.get('user_id')
@@ -201,8 +233,9 @@ def send_message():
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
 
+
 @app.route('/profile')
-@jwt_required  # Проверяем JWT токен
+@jwt_required
 def profile():
     # Получаем user_id из JWT токена
     user_id = request.user_id
@@ -221,9 +254,10 @@ def profile():
 
     # Передаем данные в шаблон
     return render_template('profile.html',
-                         user_id=user_id,
-                         username=username,
-                         facts=facts)
+                           user_id=user_id,
+                           username=username,
+                           facts=facts)
+
 
 @app.route('/logout')
 def logout():
@@ -242,6 +276,7 @@ def logout():
     </body>
     </html>
     """
+
 
 if __name__ == '__main__':
     app.run(debug=True)

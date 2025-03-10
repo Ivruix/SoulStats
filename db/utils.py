@@ -66,3 +66,15 @@ def user_exist(conn, email, username):
     if existing_user:
         return True
     return False
+
+def get_all_messages(conn, chat_id):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT message_id, chat_id, created_at, by_user, content 
+        FROM message 
+        WHERE chat_id = %s 
+        ORDER BY created_at ASC
+    """, (chat_id,))
+    messages = cur.fetchall()
+    cur.close()
+    return messages
