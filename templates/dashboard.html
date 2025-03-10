@@ -6,30 +6,108 @@
     <title>Умный дневник - Диалог с ассистентом</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
-        /* Additional styles for SVG buttons */
+        /* Additional styles for SVG buttons and mobile responsiveness */
         .header-buttons button {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Space between icon and text (if any) */
-            padding: 8px 16px; /* Adjusted padding for better SVG fit */
+            gap: 8px;
+            padding: 8px 16px;
         }
 
         .header-buttons svg {
             width: 20px;
             height: 20px;
-            fill: currentColor; /* Inherit text color from button */
+            fill: currentColor;
         }
 
-        /* Ensure the logout button has no text, just the icon */
         .logout-btn {
-            padding: 8px; /* Smaller padding for icon-only button */
+            padding: 8px;
+        }
+
+        /* Style for the limit message */
+        .limit-message {
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #a0a0c0;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Disabled state for input and button */
+        .input-container.disabled input,
+        .input-container.disabled button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Hamburger menu button */
+        .hamburger {
+            display: none; /* Hidden by default on desktop */
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ffffff;
+            padding: 8px;
+            z-index: 1002; /* Ensure it's above sidebar */
+        }
+
+        /* Sidebar toggle styles */
+        .sidebar {
+            transition: transform 0.3s ease;
+            transform: translateX(-100%); /* Hidden by default */
+        }
+
+        .sidebar.visible {
+            transform: translateX(0); /* Visible state */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 250px;
+                background: #25253a;
+                border-right: 1px solid #3b3b5a;
+                z-index: 1001;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .header-dashboard {
+                padding: 1rem;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .chat-container {
+                margin-left: 0;
+            }
+
+            .input-container {
+                left: 0;
+                width: 100%;
+            }
+
+            .header-buttons {
+                display: none; /* Hide header buttons on mobile */
+            }
         }
     </style>
 </head>
 <body class="dark dashboard-page" data-token="{{ token }}" data-user-id="{{ user_id }}" data-chat-id="{{ chat_id }}">
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-elements">
             <h2>Ваши чаты</h2>
             {% for chat in chats %}
@@ -42,18 +120,19 @@
             <button onclick="goToProfile()">Профиль</button>
             <button onclick="toggleTheme()" id="theme-btn">
                 <svg id="theme-icon" class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <!-- Moon SVG (default for dark theme) -->
                     <path fill-rule="nonzero" d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>
                 </svg>
             </button>
             <button class="logout-btn" onclick="window.location.href='/logout'" title="Выйти">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <!-- Logout SVG -->
                     <path d="M10 6H5v12h5v2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5v2zm4 4h7v4h-7v3l-5-5 5-5v3z"/>
                 </svg>
             </button>
         </div>
     </div>
+
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger" id="hamburger-btn">☰</button>
 
     <!-- Main chat area -->
     <div class="chat-container">
@@ -69,11 +148,15 @@
                     <div class="message-time">12:00</div>
                 </div>
             </div>
+            <!-- Container for the limit message -->
+            <div id="limit-message" class="limit-message" style="display: none;">
+                <p>Попытки на сегодня закончились. Вы можете начать новый чат завтра.</p>
+            </div>
         </main>
 
-        <div class="input-container">
+        <div class="input-container" id="input-container">
             <input id="messageInput" type="text" placeholder="Введите сообщение..." onkeydown="handleKeyPress(event)">
-            <button onclick="sendMessage()">💬</button>
+            <button id="sendButton" onclick="sendMessage()">💬</button>
         </div>
     </div>
 

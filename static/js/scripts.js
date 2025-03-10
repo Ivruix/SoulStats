@@ -51,7 +51,55 @@ function initializeDashboard(token, userId, chatId) {
         localStorage.setItem("token", token);
     }
 
+    const MESSAGE_LIMIT = 7;
     let currentChatId = chatId;
+
+    // Function to toggle sidebar visibility
+    window.toggleSidebar = function() {
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        sidebar.classList.toggle('visible'); // Use 'visible' class instead of 'hidden'
+        hamburgerBtn.textContent = sidebar.classList.contains('visible') ? '✖' : '☰'; // Toggle icon
+    };
+
+    function checkMessageLimit(chatId) {
+        fetch(`/get-messages/${chatId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                const messageCount = data.messages.length;
+                const inputContainer = document.getElementById('input-container');
+                const sendButton = document.getElementById('sendButton');
+                const messageInput = document.getElementById('messageInput');
+                const limitMessage = document.getElementById('limit-message');
+
+                if (messageCount >= MESSAGE_LIMIT) {
+                    inputContainer.classList.add('disabled');
+                    sendButton.disabled = true;
+                    messageInput.disabled = true;
+                    limitMessage.style.display = 'block';
+                } else {
+                    inputContainer.classList.remove('disabled');
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                    limitMessage.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при проверке лимита сообщений:', error);
+        });
+    }
 
     // Switch Chat
     window.switchChat = function(chatId) {
@@ -91,6 +139,7 @@ function initializeDashboard(token, userId, chatId) {
                     messagesDiv.appendChild(messageDiv);
                 });
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                checkMessageLimit(chatId);
             }
         })
         .catch(error => {
@@ -146,6 +195,7 @@ function initializeDashboard(token, userId, chatId) {
                 `;
                 messagesDiv.appendChild(assistantMessage);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                checkMessageLimit(currentChatId);
             }
         })
         .catch(error => {
@@ -232,5 +282,17 @@ window.onload = function() {
         initializeLogin(token);
     } else if (document.body.classList.contains('register-page')) {
         initializeRegister();
+    }
+
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+    }
+
+    if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('visible')) {
+            sidebar.classList.add('visible');
+        }
     }
 };
