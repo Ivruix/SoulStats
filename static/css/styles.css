@@ -21,8 +21,14 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    justify-content: space-between;
 }
+
+.sidebar-elements {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+ }
 
 header {
     background: #2a2a3f;
@@ -136,7 +142,7 @@ main {
 
 .header-buttons {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .header-buttons button {
