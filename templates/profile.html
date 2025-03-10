@@ -27,19 +27,9 @@
         <a onclick="goToDashboard()" style="display: block; width: 200px; margin: 20px auto; padding: 12px; text-align: center; background: #4a90e2; color: #ffffff; text-decoration: none; border-radius: 25px; cursor: pointer; transition: background 0.3s ease;">Вернуться в чат</a>
     </div>
 </div>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 <script>
-    const token = "{{ token }}";
-    if (token) {
-        localStorage.setItem("token", token);
-    }
-
-    function goToDashboard() {
-        const token = localStorage.getItem("token");
-        if (token) {
-            window.location.href = `/dashboard?token=${token}`;
-        } else {
-            window.location.href = "/login";
-        }
-    }
+    document.body.classList.add('profile-page');
+    document.body.dataset.token = "{{ token }}";
 </script>
 {% endblock %}

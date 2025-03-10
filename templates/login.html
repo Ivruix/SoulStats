@@ -23,18 +23,5 @@
         <a href="/register" style="color: #4a90e2; text-decoration: none;">Зарегистрироваться</a>
     </div>
 </div>
-<script>
-    const token = "{{ token }}";
-    if (token) {
-        localStorage.setItem("token", token);
-    }
-
-    // Пример добавления токена в заголовки запросов
-    fetch("/dashboard", {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
-    });
-</script>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 {% endblock %}

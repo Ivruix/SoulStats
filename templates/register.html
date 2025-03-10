@@ -23,16 +23,8 @@
         <a href="/login" style="color: #4a90e2; text-decoration: none;">Войти в аккаунт</a>
     </div>
 </div>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 <script>
-    // Пример сохранения токена после входа
-    localStorage.setItem("token", response.data.token);
-
-    // Пример добавления токена в заголовки запросов
-    fetch("/dashboard", {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
-    });
+    document.body.classList.add('register-page');
 </script>
 {% endblock %}
