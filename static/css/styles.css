@@ -29,12 +29,12 @@ body {
     background: #25253a;
     border-right: 1px solid #3b3b5a;
     z-index: 1001;
-    transform: translateX(0); /* Hidden by default */
+    transform: translateX(0); /* Visible by default */
     transition: transform 0.3s ease;
 }
 
-.sidebar.visible {
-    transform: translateX(-100%); /* Visible state */
+.sidebar.hidden {
+    transform: translateX(-100%); /* Hidden state */
 }
 
 .sidebar-elements {
@@ -61,6 +61,7 @@ header {
     justify-content: space-between;
     flex-wrap: nowrap;
     width: auto;
+    align-items: center;
 }
 
 .chat-container {
@@ -473,10 +474,14 @@ body.light .sidebar::-webkit-scrollbar-thumb:hover {
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sidebar {
+        transform: translateX(-100%); /* Hidden by default on mobile */
+    }
+
+    .sidebar.hidden {
         transform: translateX(-100%);
     }
 
-    .sidebar.visible {
+    .sidebar:not(.hidden) {
         transform: translateX(0);
     }
 
@@ -489,7 +494,18 @@ body.light .sidebar::-webkit-scrollbar-thumb:hover {
         width: 100%;
     }
 
-    .header-buttons {
-        display: none;
+    /* Ensure sidebar buttons are visible */
+    .sidebar .header-buttons {
+        display: flex;
+    }
+
+    .sidebar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sidebar-head button {
+        margin-bottom: 18px;
     }
 }

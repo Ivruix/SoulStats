@@ -57,6 +57,16 @@
             z-index: 1002; /* Ensure it's above sidebar */
         }
 
+        /* Sidebar toggle styles */
+        .sidebar {
+            transition: transform 0.3s ease;
+            transform: translateX(0); /* Visible by default */
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%); /* Hidden state */
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -68,6 +78,11 @@
                 background: #25253a;
                 border-right: 1px solid #3b3b5a;
                 z-index: 1001;
+                transform: translateX(-100%); /* Hidden by default on mobile */
+            }
+
+            .sidebar.hidden {
+                transform: translateX(-100%); /* Ensure hidden state */
             }
 
             .hamburger {
@@ -78,6 +93,7 @@
                 padding: 1rem;
                 width: 100%;
                 justify-content: space-between;
+                align-items: center;
             }
 
             .chat-container {
@@ -89,8 +105,9 @@
                 width: 100%;
             }
 
-            .header-buttons {
-                display: none; /* Hide header buttons on mobile */
+            /* Ensure sidebar buttons are visible */
+            .sidebar .header-buttons {
+                display: flex;
             }
         }
     </style>
@@ -99,7 +116,10 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-elements">
-            <h2>Ваши чаты</h2>
+            <div class="sidebar-head">
+                <h2>Ваши чаты</h2>
+                <button class="hamburger" id="hamburger-head-btn">☰</button>
+            </div>
             {% for chat in chats %}
                 <div class="chat-item {% if chat.chat_id == chat_id %}active{% endif %}" onclick="switchChat({{ chat.chat_id }})">
                     <span>{{ chat.created_at }}</span>
@@ -121,12 +141,10 @@
         </div>
     </div>
 
-    <!-- Hamburger Menu Button -->
-    <button class="hamburger" id="hamburger-btn">☰</button>
-
     <!-- Main chat area -->
     <div class="chat-container">
         <header class="header-dashboard">
+            <button class="hamburger" id="hamburger-btn">☰</button>
             <h1>Диалог с ассистентом ({{ username }})</h1>
         </header>
 

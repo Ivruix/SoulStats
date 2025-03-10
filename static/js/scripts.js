@@ -58,8 +58,10 @@ function initializeDashboard(token, userId, chatId) {
     window.toggleSidebar = function() {
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburger-btn');
-        sidebar.classList.toggle('visible'); // Use 'visible' class instead of 'hidden'
-        hamburgerBtn.textContent = sidebar.classList.contains('visible') ? '✖' : '☰'; // Toggle icon
+        const hamburgerHeadBtn = document.getElementById('hamburger-head-btn');
+        sidebar.classList.toggle('hidden');
+        hamburgerBtn.textContent = sidebar.classList.contains('hidden') ? '☰' : '✖';
+        hamburgerHeadBtn.textContent = sidebar.classList.contains('hidden') ? '☰' : '✖';
     };
 
     function checkMessageLimit(chatId) {
@@ -223,6 +225,12 @@ function initializeDashboard(token, userId, chatId) {
 
     // Initialize the chat
     switchChat(currentChatId);
+
+    // Ensure sidebar is hidden on mobile by default
+    if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('hidden');
+    }
 }
 
 // Profile Functions
@@ -285,14 +293,10 @@ window.onload = function() {
     }
 
     const hamburgerBtn = document.getElementById('hamburger-btn');
-    if (hamburgerBtn) {
+    const hamburgerHeadBtn = document.getElementById('hamburger-head-btn')
+    if (hamburgerBtn || hamburgerHeadBtn) {
         hamburgerBtn.addEventListener('click', toggleSidebar);
-    }
+        hamburgerHeadBtn.addEventListener('click', toggleSidebar);
 
-    if (window.innerWidth <= 768) {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('visible')) {
-            sidebar.classList.add('visible');
-        }
     }
 };
