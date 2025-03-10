@@ -4,7 +4,6 @@ function initializeTheme() {
     document.body.classList.remove('dark', 'light');
     document.body.classList.add(savedTheme);
 
-    // Update theme icon on page load
     const themeIcon = document.getElementById('theme-icon');
     if (themeIcon) {
         if (savedTheme === 'light') {
@@ -14,7 +13,7 @@ function initializeTheme() {
         } else {
             themeIcon.innerHTML = `
                 <path fill-rule="nonzero" d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>
-             `;
+            `;
         }
     }
 }
@@ -30,7 +29,6 @@ function toggleTheme() {
     url.searchParams.set('theme', newTheme);
     window.history.pushState({}, '', url);
 
-    // Update theme icon
     const themeIcon = document.getElementById('theme-icon');
     if (themeIcon) {
         if (newTheme === 'light') {
@@ -40,7 +38,7 @@ function toggleTheme() {
         } else {
             themeIcon.innerHTML = `
                 <path fill-rule="nonzero" d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>
-             `;
+            `;
         }
     }
 }
@@ -54,7 +52,6 @@ function initializeDashboard(token, userId, chatId) {
     const MESSAGE_LIMIT = 7;
     let currentChatId = chatId;
 
-    // Function to toggle sidebar visibility
     window.toggleSidebar = function() {
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -103,10 +100,8 @@ function initializeDashboard(token, userId, chatId) {
         });
     }
 
-    // Switch Chat
     window.switchChat = function(chatId) {
         currentChatId = chatId;
-
         document.querySelectorAll('.chat-item').forEach(item => {
             item.classList.remove('active');
             if (parseInt(item.getAttribute('onclick').match(/\d+/)[0]) === chatId) {
@@ -144,7 +139,6 @@ function initializeDashboard(token, userId, chatId) {
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 checkMessageLimit(chatId);
 
-                // Show welcome message if no messages
                 if (data.messages.length === 0) {
                     welcomeMessage.style.display = 'block';
                 } else {
@@ -158,7 +152,6 @@ function initializeDashboard(token, userId, chatId) {
         });
     };
 
-    // Send Message
     window.sendMessage = function() {
         const input = document.getElementById('messageInput');
         const messageText = input.value.trim();
@@ -175,7 +168,7 @@ function initializeDashboard(token, userId, chatId) {
         `;
         messagesDiv.appendChild(userMessage);
         input.value = '';
-        welcomeMessage.style.display = 'none'; // Hide welcome message when user sends a message
+        welcomeMessage.style.display = 'none';
 
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -216,7 +209,6 @@ function initializeDashboard(token, userId, chatId) {
         });
     };
 
-    // Go to Profile
     window.goToProfile = function() {
         const token = localStorage.getItem("token");
         if (token) {
@@ -226,17 +218,14 @@ function initializeDashboard(token, userId, chatId) {
         }
     };
 
-    // Handle Key Press
     window.handleKeyPress = function(event) {
         if (event.key === 'Enter') {
             sendMessage();
         }
     };
 
-    // Initialize the chat
     switchChat(currentChatId);
 
-    // Ensure sidebar is hidden on mobile by default
     if (window.innerWidth <= 768) {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.add('hidden');
@@ -258,58 +247,143 @@ function initializeProfile(token) {
         }
     };
 
-    // Function to delete a fact
-window.deleteFact = function(factId) {
-    const token = document.body.dataset.token;
-    console.log('Token being sent:', token); // Debug log
-    if (!token) {
-        console.log('Token missing, redirecting to login');
-        alert('Токен отсутствует. Пожалуйста, войдите снова.');
-        window.location.href = '/login';
-        return;
+    window.deleteFact = function(factId) {
+        const token = document.body.dataset.token;
+        if (!token) {
+            alert('Токен отсутствует. Пожалуйста, войдите снова.');
+            window.location.href = '/login';
+            return;
+        }
+
+        if (confirm('Вы уверены, что хотите удалить этот факт?')) {
+            fetch('/delete-fact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ fact_id: factId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
+                    if (factElement) {
+                        factElement.remove();
+                        alert('Факт успешно удалён.');
+                    }
+                    const factDivs = document.querySelectorAll('[data-fact-id]');
+                    if (factDivs.length === 0) {
+                        const factsContainer = document.querySelector('div[style*="Факты:"] > div');
+                        factsContainer.innerHTML = '<p style="color: #a0a0c0;">Фактов пока нет.</p>';
+                    }
+                } else {
+                    alert('Ошибка при удалении факта: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при удалении факта.');
+            });
+        }
+    };
+
+    window.goToStats = function() {
+        const token = localStorage.getItem("token");
+        if (token) {
+            window.location.href = `/stats?token=${token}`;
+        } else {
+            window.location.href = "/login";
+        }
+    };
+}
+
+// Stats Functions
+function initializeStats(token) {
+    if (token) {
+        localStorage.setItem("token", token);
     }
 
-    if (confirm('Вы уверены, что хотите удалить этот факт?')) {
-        console.log(`Sending DELETE request for fact_id: ${factId}`); // Debug log
-        fetch('/delete-fact', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({ fact_id: factId })
+    window.goToDashboard = function() {
+        const token = localStorage.getItem("token");
+        if (token) {
+            window.location.href = `/dashboard?token=${token}`;
+        } else {
+            window.location.href = "/login";
+        }
+    };
+
+    // Функция для построения графиков
+    function drawHappinessCharts() {
+        const token = document.body.dataset.token;
+        fetch('/get_happiness_data', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("token")}` }
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Ошибка сети');
-            }
+            if (!response.ok) throw new Error('Ошибка сети');
             return response.json();
         })
         .then(data => {
-            console.log('Response data:', data); // Debug log
-            if (data.status === 'success') {
-                // Remove the fact from the DOM
-                const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
-                if (factElement) {
-                    factElement.remove();
-                    alert('Факт успешно удалён.');
-                }
-                // Hide the facts section if no facts remain
-                const factDivs = document.querySelectorAll('[data-fact-id]');
-                if (factDivs.length === 0) {
-                    const factsContainer = document.querySelector('div[style*="Факты:"] > div');
-                    factsContainer.innerHTML = '<p style="color: #a0a0c0;">Фактов пока нет.</p>';
-                }
-            } else {
-                alert('Ошибка при удалении факта: ' + data.message);
-            }
+            // Линейный график по периодам
+            const periodTrace = {
+                x: data.dates,
+                y: data.levels,
+                mode: 'lines+markers',
+                line: { color: 'green' },
+                marker: {
+                    size: 12,
+                    symbol: 'circle',
+                    color: data.levels.map(level => level > 7 ? 'green' : level > 4 ? 'yellow' : 'red')
+                },
+                text: data.emojis,
+                hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
+            };
+            Plotly.newPlot('happiness-period-chart', [periodTrace], {
+                title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
+                xaxis: { title: 'Период', color: '#a0a0c0' },
+                yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            });
+
+            // Столбчатая диаграмма по дням недели
+            const dayTrace = {
+                x: data.days_of_week,
+                y: data.levels,
+                type: 'bar',
+                marker: {
+                    color: 'green',
+                    line: { width: 1, color: 'rgba(0, 0, 0, 0.1)' }
+                },
+                text: data.emojis,
+                textposition: 'auto',
+                hovertemplate: '%{text}<br>День: %{x}<br>Уровень: %{y}<extra></extra>'
+            };
+            Plotly.newPlot('happiness-day-chart', [dayTrace], {
+                title: { text: 'Уровень счастья по дням недели', font: { color: '#a0a0c0' } },
+                xaxis: { title: 'День недели', color: '#a0a0c0' },
+                yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            });
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка при удалении факта.');
+            console.error('Ошибка:', error);
+            alert('Не удалось загрузить статистику.');
         });
     }
-};
+
+    // Загружаем Plotly.js и вызываем drawHappinessCharts после загрузки
+    const script = document.createElement('script');
+    script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+    script.onload = function() {
+        console.log('Plotly.js загружен');
+        drawHappinessCharts();
+    };
+    script.onerror = function() {
+        console.error('Ошибка загрузки Plotly.js');
+    };
+    document.head.appendChild(script);
 }
 
 // Login Functions
@@ -340,18 +414,20 @@ function initializeRegister() {
 window.onload = function() {
     initializeTheme();
 
-    // Check if the page has specific data attributes and initialize accordingly
     const token = document.body.dataset.token;
     const userId = document.body.dataset.userId ? parseInt(document.body.dataset.userId) : null;
     const chatId = document.body.dataset.chatId ? parseInt(document.body.dataset.chatId) : null;
 
-    if (document.body.classList.contains('dashboard-page')) {
+    const currentPath = window.location.pathname;
+    if (currentPath === '/dashboard') {
         initializeDashboard(token, userId, chatId);
-    } else if (document.body.classList.contains('profile-page')) {
+    } else if (currentPath === '/profile') {
         initializeProfile(token);
-    } else if (document.body.classList.contains('login-page')) {
+    } else if (currentPath === '/stats') {
+        initializeStats(token);
+    } else if (currentPath === '/login') {
         initializeLogin(token);
-    } else if (document.body.classList.contains('register-page')) {
+    } else if (currentPath === '/register') {
         initializeRegister();
     }
 

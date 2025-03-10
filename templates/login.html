@@ -12,7 +12,9 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" width="100" style="margin-bottom: 20px;">
+    <div class="logo-position">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" width="100" style="margin-bottom: 20px;">
+    </div>
     <form action="/login" method="post" style="display: flex; flex-direction: column; gap: 15px;">
         <input type="text" name="username" placeholder="Введите ваш никнейм" required style="padding: 12px; border: none; border-radius: 25px; background: #1e1e2f; color: #e0e0e0; outline: none;">
         <input type="password" name="password" placeholder="Введите ваш пароль" required style="padding: 12px; border: none; border-radius: 25px; background: #1e1e2f; color: #e0e0e0; outline: none;">

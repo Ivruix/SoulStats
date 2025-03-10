@@ -14,8 +14,6 @@ from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_
     analyze_chat, get_facts_by_user
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
-
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -43,11 +41,9 @@ sdk = YCloudML(
     auth=os.getenv("YANDEXGPT_API_KEY"),
 )
 
-
 @app.route('/')
 def landing_page():
     return render_template('landing.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -83,7 +79,6 @@ def login():
         return redirect(url_for('dashboard', token=token))
 
     return render_template('login.html')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -125,7 +120,6 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -147,7 +141,6 @@ def forgot_password():
         #     flash("Пользователь с таким email не найден.", "danger")
 
     return render_template('forgot_password.html')
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -182,7 +175,6 @@ def dashboard():
     return render_template('dashboard.html', chat_id=chat_id, username=username, user_id=user_id, token=token,
                            chats=chats)
 
-
 @app.route('/get-messages/<int:chat_id>', methods=['GET'])
 @jwt_required
 def get_messages(chat_id):
@@ -200,13 +192,11 @@ def get_messages(chat_id):
 
     return jsonify({"status": "success", "messages": messages})
 
-
 @app.route('/send-message', methods=['POST'])
 @jwt_required
 def send_message():
     # Получаем данные из запроса
     data = request.get_json()
-
     if not data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
     chat_id = data.get('chat_id')
@@ -234,7 +224,6 @@ def send_message():
         analyze_chat(connection, sdk, chat_id, user_id)
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
-
 
 @app.route('/profile')
 @jwt_required
@@ -264,7 +253,6 @@ def profile():
                            facts=facts,
                            token=token)
 
-
 @app.route('/delete-fact', methods=['POST'])
 @jwt_required
 def delete_fact_route():
@@ -291,6 +279,67 @@ def delete_fact_route():
     finally:
         cur.close()
 
+@app.route('/stats')
+@jwt_required
+def stats():
+    user_id = request.user_id
+    token = request.args.get('token')
+    print(f"Rendering stats for user_id: {user_id}, token: {token}")
+    return render_template('stats.html', token=token)
+
+@app.route('/get_happiness_data', methods=['GET'])
+@jwt_required
+def get_happiness_data():
+    print(1)
+    user_id = request.user_id
+    try:
+        cur = connection.cursor()
+        # Получаем данные из таблицы happiness_level через chat_id
+        cur.execute("""
+            SELECT c.created_at, hl.val
+            FROM happiness_level hl
+            JOIN chat c ON hl.chat_id = c.chat_id
+            WHERE c.user_id = %s
+            ORDER BY c.created_at ASC
+        """, (user_id,))
+        data = cur.fetchall()
+        cur.close()
+
+        print(f"Fetched data: {data}")  # Добавляем отладочный вывод
+
+        # Преобразуем данные для фронтенда
+        if not data:
+            print("No happiness data found for user_id:", user_id)
+            return jsonify({
+                'dates': [],
+                'levels': [],
+                'days_of_week': [],
+                'emojis': []
+            })
+
+        dates = [row[0].strftime('%Y-%m-%d') for row in data]
+        levels = [row[1] for row in data]
+        days_of_week = [row[0].strftime('%a') for row in data]  # Получаем сокращённые названия дней (Mon, Tue, ...)
+
+        # Пример маппинга значений happiness_level к эмоциям для смайликов
+        emojis = []
+        for level in levels:
+            if level > 7:
+                emojis.append('😊')  # Высокий уровень счастья
+            elif level > 4:
+                emojis.append('🙂')  # Средний уровень
+            else:
+                emojis.append('😞')  # Низкий уровень
+
+        return jsonify({
+            'dates': dates,
+            'levels': levels,
+            'days_of_week': days_of_week,
+            'emojis': emojis
+        })
+    except Exception as e:
+        print(f"Error in get_happiness_data: {str(e)}")  # Отладочный вывод ошибок
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/logout')
 def logout():
@@ -309,7 +358,6 @@ def logout():
     </body>
     </html>
     """
-
 
 if __name__ == '__main__':
     app.run(debug=True)

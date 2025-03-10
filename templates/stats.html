@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Статистика счастья{% endblock %}
+{% block content %}
+<div style="max-width: 1200px; width: 100%; margin: 20px auto;">
+    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; text-align: center;">Статистика уровня счастья</h2>
+    <div style="display: flex; justify-content: space-between;">
+        <!-- График по периодам -->
+        <div style="width: 48%; background: #25253a; padding: 20px; border-radius: 15px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);">
+            <h3 style="color: #a0a0c0; text-align: center;">По периодам</h3>
+            <div id="happiness-period-chart" style="height: 400px;"></div>
+        </div>
+        <!-- График по дням недели -->
+        <div style="width: 48%; background: #25253a; padding: 20px; border-radius: 15px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);">
+            <h3 style="color: #a0a0c0; text-align: center;">По дням недели</h3>
+            <div id="happiness-day-chart" style="height: 400px;"></div>
+        </div>
+    </div>
+    <a onclick="goToDashboard()" style="display: block; width: 200px; margin: 20px auto; padding: 12px; text-align: center; background: #4a90e2; color: #ffffff; text-decoration: none; border-radius: 25px; cursor: pointer; transition: background 0.3s ease;">Вернуться в профиль</a>
+</div>
+{% endblock %}

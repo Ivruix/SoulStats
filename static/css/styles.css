@@ -281,6 +281,12 @@ footer p {
     font-size: 0.9rem;
 }
 
+.logo-position {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 /* Shared Scrollbar Styling */
 main::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar {
