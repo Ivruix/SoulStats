@@ -13,84 +13,169 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a3f 100%);
+            background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 100%);
             color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
             min-height: 100vh;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stellar-bg {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .nebula {
+            position: absolute;
+            width: 200vw;
+            height: 200vh;
+            background: radial-gradient(circle,
+                rgba(106, 90, 205, 0.1) 0%,
+                rgba(70, 130, 180, 0.05) 30%,
+                transparent 70%);
+            animation: drift 40s linear infinite;
+            filter: blur(60px);
+        }
+
+        @keyframes drift {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         header {
-            background: #2a2a3f;
+            position: relative;
+            z-index: 2;
+            background: rgba(42, 42, 63, 0.8);
+            backdrop-filter: blur(10px);
             padding: 15px 25px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-        }
-
-        header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #ffffff;
         }
 
         .content {
+            position: relative;
+            z-index: 1;
             padding: 80px 20px 20px;
             max-width: 600px;
-            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: contentAppear 1s ease-out forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes contentAppear {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .content p {
             font-size: 1.1rem;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             line-height: 1.6;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
+            perspective: 1000px;
         }
 
         .buttons a {
             text-decoration: none;
             color: #ffffff;
-            background: #4a90e2;
-            padding: 12px 25px;
-            border-radius: 25px;
+            background: linear-gradient(135deg, #4a90e2 0%, #5f2c82 100%);
+            padding: 15px 35px;
+            border-radius: 30px;
             font-size: 1rem;
             font-weight: 500;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .buttons a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
         }
 
         .buttons a:hover {
-            background: #357abd;
+            transform: translateY(-3px) rotateX(15deg);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.4);
+        }
+
+        .buttons a:hover::before {
+            left: 100%;
         }
 
         footer {
-            background: #25253a;
+            position: relative;
+            z-index: 1;
+            background: rgba(37, 37, 58, 0.8);
+            backdrop-filter: blur(10px);
             color: #a0a0c0;
             text-align: center;
             padding: 15px 0;
             margin-top: auto;
             width: 100%;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        footer p {
-            font-size: 0.9rem;
+        .cursor-trail {
+            position: fixed;
+            pointer-events: none;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: trail 0.5s linear forwards;
+        }
+
+        @keyframes trail {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
         }
     </style>
 </head>
 <body>
+    <div class="stellar-bg">
+        <div class="nebula" style="top: 30%; left: 40%"></div>
+        <div class="nebula" style="top: 70%; left: 60%"></div>
+    </div>
+
     <header>
         <h1>SoulStats</h1>
     </header>
+
     <div class="content">
         <p>SoulStats - это инновационный инструмент для ведения личных заметок, планирования задач и анализа данных с использованием современных технологий.</p>
         <div class="buttons">
@@ -98,9 +183,42 @@
             <a href="/register">Зарегистрироваться</a>
         </div>
     </div>
+
     <footer>
         <p>© 2025 Soul Stats. Все права защищены.</p>
     </footer>
-<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+    <script>
+        // Создание звёздного фона
+        function createStars() {
+            const container = document.querySelector('.stellar-bg');
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 3}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                container.appendChild(star);
+            }
+        }
+
+        // Эффект следов от курсора
+        document.addEventListener('mousemove', (e) => {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.left = `${e.clientX}px`;
+            trail.style.top = `${e.clientY}px`;
+            document.body.appendChild(trail);
+
+            setTimeout(() => trail.remove(), 500);
+        });
+
+        // Инициализация
+        window.addEventListener('DOMContentLoaded', () => {
+            createStars();
+        });
+    </script>
 </body>
 </html>

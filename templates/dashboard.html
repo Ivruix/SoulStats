@@ -38,6 +38,19 @@
             background: rgba(0, 0, 0, 0.2);
         }
 
+        /* Style for the welcome message */
+        .welcome-message {
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #a0a0c0;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
         /* Disabled state for input and button */
         .input-container.disabled input,
         .input-container.disabled button {
@@ -159,6 +172,10 @@
             <!-- Container for the limit message -->
             <div id="limit-message" class="limit-message" style="display: none;">
                 <p>Попытки на сегодня закончились. Вы можете начать новый чат завтра.</p>
+            </div>
+            <!-- Container for the welcome message -->
+            <div id="welcome-message" class="welcome-message" style="display: none;">
+                <p>Расскажите как прошёл ваш день.</p>
             </div>
         </main>
 

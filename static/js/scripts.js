@@ -131,6 +131,7 @@ function initializeDashboard(token, userId, chatId) {
         })
         .then(data => {
             if (data.status === 'success') {
+                const welcomeMessage = document.getElementById('welcome-message');
                 data.messages.forEach(msg => {
                     const messageDiv = document.createElement('div');
                     messageDiv.classList.add('message', msg.by_user ? 'user' : 'assistant');
@@ -142,6 +143,13 @@ function initializeDashboard(token, userId, chatId) {
                 });
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 checkMessageLimit(chatId);
+
+                // Show welcome message if no messages
+                if (data.messages.length === 0) {
+                    welcomeMessage.style.display = 'block';
+                } else {
+                    welcomeMessage.style.display = 'none';
+                }
             }
         })
         .catch(error => {
@@ -154,6 +162,7 @@ function initializeDashboard(token, userId, chatId) {
     window.sendMessage = function() {
         const input = document.getElementById('messageInput');
         const messageText = input.value.trim();
+        const welcomeMessage = document.getElementById('welcome-message');
 
         if (messageText === '') return;
 
@@ -166,6 +175,7 @@ function initializeDashboard(token, userId, chatId) {
         `;
         messagesDiv.appendChild(userMessage);
         input.value = '';
+        welcomeMessage.style.display = 'none'; // Hide welcome message when user sends a message
 
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -293,10 +303,9 @@ window.onload = function() {
     }
 
     const hamburgerBtn = document.getElementById('hamburger-btn');
-    const hamburgerHeadBtn = document.getElementById('hamburger-head-btn')
+    const hamburgerHeadBtn = document.getElementById('hamburger-head-btn');
     if (hamburgerBtn || hamburgerHeadBtn) {
         hamburgerBtn.addEventListener('click', toggleSidebar);
         hamburgerHeadBtn.addEventListener('click', toggleSidebar);
-
     }
 };
