@@ -257,6 +257,59 @@ function initializeProfile(token) {
             window.location.href = "/login";
         }
     };
+
+    // Function to delete a fact
+window.deleteFact = function(factId) {
+    const token = document.body.dataset.token;
+    console.log('Token being sent:', token); // Debug log
+    if (!token) {
+        console.log('Token missing, redirecting to login');
+        alert('Токен отсутствует. Пожалуйста, войдите снова.');
+        window.location.href = '/login';
+        return;
+    }
+
+    if (confirm('Вы уверены, что хотите удалить этот факт?')) {
+        console.log(`Sending DELETE request for fact_id: ${factId}`); // Debug log
+        fetch('/delete-fact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ fact_id: factId })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // Debug log
+            if (data.status === 'success') {
+                // Remove the fact from the DOM
+                const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
+                if (factElement) {
+                    factElement.remove();
+                    alert('Факт успешно удалён.');
+                }
+                // Hide the facts section if no facts remain
+                const factDivs = document.querySelectorAll('[data-fact-id]');
+                if (factDivs.length === 0) {
+                    const factsContainer = document.querySelector('div[style*="Факты:"] > div');
+                    factsContainer.innerHTML = '<p style="color: #a0a0c0;">Фактов пока нет.</p>';
+                }
+            } else {
+                alert('Ошибка при удалении факта: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении факта.');
+        });
+    }
+};
 }
 
 // Login Functions

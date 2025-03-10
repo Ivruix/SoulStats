@@ -86,6 +86,6 @@ def analyze_chat(conn, sdk, chat_id, user_id):
 def get_facts_by_user(conn, user_id):
     cur = conn.cursor()
 
-    cur.execute(f"SELECT content FROM fact WHERE user_id = {user_id}")
-    facts = [fact[0] for fact in cur.fetchall()]
+    cur.execute(f"SELECT fact_id, content FROM fact WHERE user_id = {user_id}")
+    facts = [{"fact_id": row[0], "content": row[1]} for row in cur.fetchall()]
     return facts

@@ -78,3 +78,8 @@ def get_all_messages(conn, chat_id):
     messages = cur.fetchall()
     cur.close()
     return messages
+
+def delete_fact(conn, fact_id):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM fact WHERE fact_id = %s", (fact_id,))
+    conn.commit()

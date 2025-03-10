@@ -1,4 +1,5 @@
 import os
+import sys
 
 import bcrypt
 import psycopg2
@@ -7,11 +8,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mail import Mail
 from yandex_cloud_ml_sdk import YCloudML
 
-from db.utils import register_user, user_login, get_usernames, get_user_id, get_user, get_all_messages
+from db.utils import register_user, user_login, get_usernames, get_user_id, get_user, get_all_messages, delete_fact
 from ml_backend.agents.chatter import Chatter
 from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
     analyze_chat, get_facts_by_user
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
+
+
 
 load_dotenv()
 
@@ -55,7 +58,6 @@ def login():
         if not username or not password:
             flash("Все поля должны быть заполнены.", "danger")
             return render_template('login.html')
-
         # Получаем пользователя из базы данных
         user_id = get_user_id(connection, username)
         user = get_user(connection, user_id)
@@ -204,6 +206,7 @@ def get_messages(chat_id):
 def send_message():
     # Получаем данные из запроса
     data = request.get_json()
+
     if not data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
     chat_id = data.get('chat_id')
@@ -229,7 +232,6 @@ def send_message():
 
     if (MAX_CHAT_LEN - len(chat) + 1) // 2 == 1:
         analyze_chat(connection, sdk, chat_id, user_id)
-
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
 
@@ -239,7 +241,6 @@ def send_message():
 def profile():
     # Получаем user_id из JWT токена
     user_id = request.user_id
-
     # Получаем данные пользователя из базы данных
     user_data = get_user(connection, user_id)
 
@@ -250,13 +251,45 @@ def profile():
     # Распаковываем данные
     user_id, username, created_at = user_data
 
+    # Получаем факты с их fact_id
     facts = get_facts_by_user(connection, user_id)
+
+    # Получаем токен из query-параметра
+    token = request.args.get('token')
 
     # Передаем данные в шаблон
     return render_template('profile.html',
                            user_id=user_id,
                            username=username,
-                           facts=facts)
+                           facts=facts,
+                           token=token)
+
+
+@app.route('/delete-fact', methods=['POST'])
+@jwt_required
+def delete_fact_route():
+    data = request.get_json()
+    if not data or 'fact_id' not in data:
+        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+
+    fact_id = data['fact_id']
+    user_id = request.user_id
+
+    try:
+        cur = connection.cursor()
+        cur.execute("SELECT user_id FROM fact WHERE fact_id = %s", (fact_id,))
+        fact_user_id = cur.fetchone()
+        if not fact_user_id or fact_user_id[0] != user_id:
+            return jsonify({"status": "error", "message": "Нет доступа к факту"}), 403
+
+        delete_fact(connection, fact_id)
+        connection.commit()
+        return jsonify({"status": "success", "message": "Факт удалён"})
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        cur.close()
 
 
 @app.route('/logout')
