@@ -29,12 +29,12 @@ body {
     background: #25253a;
     border-right: 1px solid #3b3b5a;
     z-index: 1001;
-    transform: translateX(-100%); /* Hidden by default */
+    transform: translateX(0); /* Hidden by default */
     transition: transform 0.3s ease;
 }
 
 .sidebar.visible {
-    transform: translateX(0); /* Visible state */
+    transform: translateX(-100%); /* Visible state */
 }
 
 .sidebar-elements {
