@@ -53,5 +53,12 @@ class Chat:
         }
         return "\n".join(f"{mapping[message['role']]}: {message['text']}" for message in self.messages)
 
+    def assistant_message_count(self):
+        count = 0
+        for message in self.messages:
+            if message["role"] == "assistant":
+                count += 1
+        return count
+
     def __len__(self):
         return len(self.messages)

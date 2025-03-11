@@ -1,5 +1,4 @@
 import os
-import sys
 
 import bcrypt
 import psycopg2
@@ -27,8 +26,7 @@ app.config['MAIL_USERNAME'] = 'thegoomba4@gmail.com'  # Укажите почт�
 app.config['MAIL_PASSWORD'] = 'test!'  # Укажите пароль от почты
 mail = Mail(app)
 
-PAID_GPT_MESSAGES = 3
-MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
+PAID_GPT_MESSAGES = 4
 
 connection = psycopg2.connect(f"""
     dbname=test
@@ -222,13 +220,14 @@ def send_message():
 
     chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
     chatter = Chatter(chatter_model)
-    new_message = chatter.generate_response(chat, (MAX_CHAT_LEN - len(chat) + 1))
+    new_message = chatter.generate_response(chat, PAID_GPT_MESSAGES - chat.assistant_message_count())
 
     # Добавляем ответ ассистента в базу данных
     add_assistant_message(connection, chat_id, new_message)
 
-    if (MAX_CHAT_LEN - len(chat) + 1) // 2 == 1:
+    if PAID_GPT_MESSAGES - chat.assistant_message_count() == 0:
         analyze_chat(connection, sdk, chat_id, user_id)
+
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
 

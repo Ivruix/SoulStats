@@ -49,7 +49,7 @@ function initializeDashboard(token, userId, chatId) {
         localStorage.setItem("token", token);
     }
 
-    const MESSAGE_LIMIT = 7;
+    const MESSAGE_LIMIT = 4 * 2; // 4 сообщения от ассистента
     let currentChatId = chatId;
 
     window.toggleSidebar = function() {

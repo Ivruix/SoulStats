@@ -11,7 +11,7 @@ class MoodAnalyzer:
         new_chat = Chat()
         new_chat.add_user_message(chat_str)
 
-        result = self.model.run(new_chat.with_system_prompt(MOOD_ANALYZER_PROMPT))[0].text
+        result = self.model.run(new_chat.with_system_prompt(MOOD_ANALYZER_PROMPT).as_list())[0].text
 
         try:
             result = int(result)

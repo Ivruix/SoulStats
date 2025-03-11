@@ -12,5 +12,5 @@ class EmotionAnalyzer:
         new_chat = Chat()
         new_chat.add_user_message(chat_str)
 
-        result = self.model.run(new_chat.with_system_prompt(EMOTION_ANALYZER_PROMPT))[0].text
+        result = self.model.run(new_chat.with_system_prompt(EMOTION_ANALYZER_PROMPT).as_list())[0].text
         return Emotion.from_russian_name(result.lower().strip())

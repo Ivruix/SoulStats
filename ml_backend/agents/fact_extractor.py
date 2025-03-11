@@ -11,7 +11,7 @@ class FactExtractor:
         new_chat = Chat()
         new_chat.add_user_message(chat_str)
 
-        result = self.model.run(new_chat.with_system_prompt(FACT_EXTRACTOR_PROMPT))[0].text
+        result = self.model.run(new_chat.with_system_prompt(FACT_EXTRACTOR_PROMPT).as_list())[0].text
         result = [line.strip() for line in result.splitlines() if line.strip() != ""]
 
         return result
