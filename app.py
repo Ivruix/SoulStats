@@ -218,14 +218,18 @@ def send_message():
     # Логика ответа нейронки
     chat = get_chat_by_chat_id(connection, chat_id)
 
+    facts = get_facts_by_user(connection, user_id)
+    facts = [fact["content"] for fact in facts]
+
     chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
     chatter = Chatter(chatter_model)
-    new_message = chatter.generate_response(chat, PAID_GPT_MESSAGES - chat.assistant_message_count())
+    new_message = chatter.generate_response(chat, facts, PAID_GPT_MESSAGES - chat.assistant_message_count())
 
     # Добавляем ответ ассистента в базу данных
     add_assistant_message(connection, chat_id, new_message)
 
-    if PAID_GPT_MESSAGES - chat.assistant_message_count() == 0:
+    # Анализируем чат, если это было последнее сообщение ассистента
+    if PAID_GPT_MESSAGES - chat.assistant_message_count() == 1:
         analyze_chat(connection, sdk, chat_id, user_id)
 
     # Возвращаем ответ
