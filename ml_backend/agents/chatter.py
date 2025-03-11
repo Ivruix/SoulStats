@@ -1,6 +1,7 @@
 from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, WILL_END_SOON_PROMPT, CLOSING_MESSAGE_PROMPT
 from ml_backend.data_types.chat import Chat
 
+
 class Chatter:
     def __init__(self, model):
         self.model = model

@@ -18,7 +18,8 @@ def create_or_get_today_chat(conn, user_id):
 
     # Сравниваем, если сегодня чата еще не было, создаем
     if last_chat_date is None or last_chat_date != current_date:
-        cur.execute(f"INSERT INTO chat (user_id, created_at) VALUES ({user_id}, \'{current_date.year}-{current_date.month}-{current_date.day}\')")
+        cur.execute(
+            f"INSERT INTO chat (user_id, created_at) VALUES ({user_id}, \'{current_date.year}-{current_date.month}-{current_date.day}\')")
         conn.commit()
 
     # Возвращаем chat_id сегодняшнего чата

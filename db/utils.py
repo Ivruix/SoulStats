@@ -1,8 +1,3 @@
-import os
-
-import psycopg2
-
-
 def register_user(conn, username, email, password_hash):
     cur = conn.cursor()
     cur.execute("""
@@ -15,6 +10,7 @@ def register_user(conn, username, email, password_hash):
     cur.close()
     return True
 
+
 def user_login(conn, username, password):
     cur = conn.cursor()
 
@@ -24,6 +20,7 @@ def user_login(conn, username, password):
         return None
 
     return user[1]
+
 
 def get_usernames(conn):
     cur = conn.cursor()
@@ -36,16 +33,18 @@ def get_usernames(conn):
 
     return usernames
 
+
 def get_user_id(conn, username):
     cur = conn.cursor()
 
-    cur.execute("SELECT user_id FROM user_data WHERE username = %s LIMIT 1", (username, ))
+    cur.execute("SELECT user_id FROM user_data WHERE username = %s LIMIT 1", (username,))
     id = cur.fetchone()
 
     if id is None:
         return None
 
     return id[0]
+
 
 def get_user(conn, user_id):
     cur = conn.cursor()
@@ -57,6 +56,7 @@ def get_user(conn, user_id):
     user_data = cur.fetchone()
     return user_data
 
+
 def user_exist(conn, email, username):
     # Проверяем, что пользователь с таким email или username не существует
     cur = conn.cursor()
@@ -66,6 +66,7 @@ def user_exist(conn, email, username):
     if existing_user:
         return True
     return False
+
 
 def get_all_messages(conn, chat_id):
     cur = conn.cursor()
@@ -78,6 +79,7 @@ def get_all_messages(conn, chat_id):
     messages = cur.fetchall()
     cur.close()
     return messages
+
 
 def delete_fact(conn, fact_id):
     cur = conn.cursor()

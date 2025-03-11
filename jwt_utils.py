@@ -12,6 +12,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("JWT_SECRET")  # Секретный ключ для подписи токенов
 ALGORITHM = "HS256"  # Алгоритм подписи
 
+
 def create_jwt_token(user_id, username, chat_id=0):
     """Создает JWT токен для пользователя."""
     payload = {
@@ -23,6 +24,7 @@ def create_jwt_token(user_id, username, chat_id=0):
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
+
 def decode_jwt_token(token):
     """Декодирует JWT токен и возвращает данные пользователя."""
     try:
@@ -32,6 +34,7 @@ def decode_jwt_token(token):
         return None  # Токен истёк
     except jwt.InvalidTokenError:
         return None  # Неверный токен
+
 
 def jwt_required(f):
     @wraps(f)
@@ -55,4 +58,5 @@ def jwt_required(f):
             return jsonify({"error": "Неверный токен"}), 401
 
         return f(*args, **kwargs)
+
     return decorated_function

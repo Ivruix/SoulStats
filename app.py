@@ -41,9 +41,11 @@ sdk = YCloudML(
     auth=os.getenv("YANDEXGPT_API_KEY"),
 )
 
+
 @app.route('/')
 def landing_page():
     return render_template('landing.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -79,6 +81,7 @@ def login():
         return redirect(url_for('dashboard', token=token))
 
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -120,6 +123,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -141,6 +145,7 @@ def forgot_password():
         #     flash("Пользователь с таким email не найден.", "danger")
 
     return render_template('forgot_password.html')
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -175,6 +180,7 @@ def dashboard():
     return render_template('dashboard.html', chat_id=chat_id, username=username, user_id=user_id, token=token,
                            chats=chats)
 
+
 @app.route('/get-messages/<int:chat_id>', methods=['GET'])
 @jwt_required
 def get_messages(chat_id):
@@ -191,6 +197,7 @@ def get_messages(chat_id):
     } for msg in messages]
 
     return jsonify({"status": "success", "messages": messages})
+
 
 @app.route('/send-message', methods=['POST'])
 @jwt_required
@@ -225,6 +232,7 @@ def send_message():
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
 
+
 @app.route('/profile')
 @jwt_required
 def profile():
@@ -253,6 +261,7 @@ def profile():
                            facts=facts,
                            token=token)
 
+
 @app.route('/delete-fact', methods=['POST'])
 @jwt_required
 def delete_fact_route():
@@ -279,6 +288,7 @@ def delete_fact_route():
     finally:
         cur.close()
 
+
 @app.route('/stats')
 @jwt_required
 def stats():
@@ -286,6 +296,7 @@ def stats():
     token = request.args.get('token')
     print(f"Rendering stats for user_id: {user_id}, token: {token}")
     return render_template('stats.html', token=token)
+
 
 @app.route('/get_happiness_data', methods=['GET'])
 @jwt_required
@@ -341,6 +352,7 @@ def get_happiness_data():
         print(f"Error in get_happiness_data: {str(e)}")  # Отладочный вывод ошибок
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
 @app.route('/logout')
 def logout():
     return """
@@ -358,6 +370,7 @@ def logout():
     </body>
     </html>
     """
+
 
 if __name__ == '__main__':
     app.run(debug=True)

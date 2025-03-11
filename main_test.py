@@ -6,7 +6,6 @@ import psycopg2
 import os
 from ml_backend.db.utils import *
 
-
 PAID_GPT_MESSAGES = 3
 MAX_CHAT_LEN = PAID_GPT_MESSAGES * 2 + 1
 
