@@ -221,6 +221,10 @@ def send_message():
     # Получаем чат
     chat = get_chat_by_chat_id(connection, chat_id)
 
+    # Проверяем, что пользователь не превысил лимит сообщений
+    if PAID_GPT_MESSAGES <= chat.assistant_message_count():
+        return jsonify({"status": "success", "reply": "Вы превысили лимит сообщений на сегодня."})
+
     # Получаем факты о пользователе
     facts = get_facts_by_user(connection, user_id)
     facts = [fact["content"] for fact in facts]
