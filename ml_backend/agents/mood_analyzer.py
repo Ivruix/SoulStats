@@ -14,7 +14,7 @@ class MoodAnalyzer:
         result = self.model.run(new_chat.with_system_prompt(MOOD_ANALYZER_PROMPT).as_list())[0].text
 
         try:
-            result = int(result)
+            result = int(result) + 3
             if result > 5 or result < 1:
                 return None
             return result
