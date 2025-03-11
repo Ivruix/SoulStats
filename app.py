@@ -165,6 +165,9 @@ def dashboard():
     user_id = payload['user_id']
     chat_id = payload['chat_id']
 
+    # Создаем чат пользователя на сегодня, если его еще нет
+    create_or_get_today_chat(connection, user_id)
+
     # Получаем список чатов пользователя
     cur = connection.cursor()
     cur.execute("SELECT chat_id, created_at FROM chat WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
