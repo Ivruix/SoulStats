@@ -6,9 +6,9 @@ class Emotion(enum.Enum):
     sadness = ("sadness", "грусть")
     anger = ("anger", "гнев")
     anxiety = ("anxiety", "тревога")
-    shame = ("shame", "стыд")
     disappointment = ("disappointment", "разочарование")
     hope = ("hope", "надежда")
+    surprise = ("surprise", "удивление")
     neutral = ("neutral", "нейтральное")
     unknown = ("unknown", "неизвестное")
 
