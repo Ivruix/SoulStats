@@ -215,12 +215,14 @@ def send_message():
     # Добавляем сообщение пользователя в базу данных
     add_user_message(connection, chat_id, content)
 
-    # Логика ответа нейронки
+    # Получаем чат
     chat = get_chat_by_chat_id(connection, chat_id)
 
+    # Получаем факты о пользователе
     facts = get_facts_by_user(connection, user_id)
     facts = [fact["content"] for fact in facts]
 
+    # Получаем ответ ассистента
     chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
     chatter = Chatter(chatter_model)
     new_message = chatter.generate_response(chat, facts, PAID_GPT_MESSAGES - chat.assistant_message_count())
@@ -285,6 +287,57 @@ def delete_fact_route():
         delete_fact(connection, fact_id)
         connection.commit()
         return jsonify({"status": "success", "message": "Факт удалён"})
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        cur.close()
+
+
+@app.route('/create_fact', methods=['POST'])
+@jwt_required
+def create_fact():
+    data = request.get_json()
+    if not data or 'content' not in data:
+        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+
+    content = data['content']
+    user_id = request.user_id
+
+    try:
+        cur = connection.cursor()
+        cur.execute("INSERT INTO fact (user_id, content) VALUES (%s, %s) RETURNING fact_id", (user_id, content))
+        fact_id = cur.fetchone()[0]
+        connection.commit()
+        return jsonify({"status": "success", "fact_id": fact_id, "content": content})
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        cur.close()
+
+
+@app.route('/update_fact', methods=['POST'])
+@jwt_required
+def update_fact():
+    data = request.get_json()
+    if not data or 'fact_id' not in data or 'content' not in data:
+        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+
+    fact_id = data['fact_id']
+    content = data['content']
+    user_id = request.user_id
+
+    try:
+        cur = connection.cursor()
+        cur.execute("SELECT user_id FROM fact WHERE fact_id = %s", (fact_id,))
+        fact_user_id = cur.fetchone()
+        if not fact_user_id or fact_user_id[0] != user_id:
+            return jsonify({"status": "error", "message": "Нет доступа к факту"}), 403
+
+        cur.execute("UPDATE fact SET content = %s WHERE fact_id = %s", (content, fact_id))
+        connection.commit()
+        return jsonify({"status": "success", "message": "Факт обновлён"})
     except Exception as e:
         connection.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500

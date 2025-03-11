@@ -8,7 +8,7 @@ def register_user(conn, username, email, password_hash):
     user_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
-    return True
+    return user_id
 
 
 def get_usernames(conn):
