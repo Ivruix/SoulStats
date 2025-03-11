@@ -1,24 +1,12 @@
-from random import choice
 from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, WILL_END_SOON_PROMPT, CLOSING_MESSAGE_PROMPT
-
-
-def generate_first_message():
-    first_messages = [
-        "Привет! Что сегодня было интересного?",
-        "Привет! Как прошел твой день?",
-        "Привет! Есть что-то, чем хочешь поделиться?"
-    ]
-    return choice(first_messages)
-
+from ml_backend.data_types.chat import Chat
 
 class Chatter:
     def __init__(self, model):
         self.model = model
 
     def generate_response(self, chat, messages_left):
-        if len(chat.messages) == 0:
-            return generate_first_message()
-
+        # messages_left - сколько сообщений ассистенту осталось написать
         if messages_left == 1:
             system_prompt = CLOSING_MESSAGE_PROMPT
         else:
@@ -26,6 +14,10 @@ class Chatter:
             if messages_left <= 2:
                 system_prompt = system_prompt + " " + WILL_END_SOON_PROMPT
 
-        result = self.model.run(chat.with_system_prompt(system_prompt, "Привет"))[0].text
+        before_chat = Chat()
+        before_chat.add_user_message("Привет.")
+        before_chat.add_assistant_message("Привет! Как прошел ваш день?")
+
+        result = self.model.run(before_chat.with_chat(chat).with_system_prompt(system_prompt).as_list())[0].text
 
         return result

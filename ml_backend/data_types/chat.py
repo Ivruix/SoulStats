@@ -1,6 +1,9 @@
 class Chat:
-    def __init__(self):
-        self.messages = []
+    def __init__(self, messages=None):
+        if messages is None:
+            self.messages = []
+        else:
+            self.messages = messages
 
     @staticmethod
     def from_db_messages(messages):
@@ -28,21 +31,19 @@ class Chat:
             }
         )
 
+    def with_chat(self, other):
+        return Chat(self.messages + other.messages)
+
     def with_system_prompt(self, system_prompt, user_message=None):
         prompt_dict = {
             "role": "system",
             "text": system_prompt
         }
 
-        if user_message is None:
-            return [prompt_dict] + self.messages
+        return Chat([prompt_dict] + self.messages)
 
-        user_message_dict = {
-            "role": "user",
-            "text": user_message
-        }
-
-        return [prompt_dict, user_message_dict] + self.messages
+    def as_list(self):
+        return self.messages
 
     def as_string(self):
         mapping = {
