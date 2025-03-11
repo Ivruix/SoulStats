@@ -11,17 +11,6 @@ def register_user(conn, username, email, password_hash):
     return True
 
 
-def user_login(conn, username, password):
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM user_data WHERE username = %s LIMIT 1", (username,))
-    user = cur.fetchone()
-    if user is None:
-        return None
-
-    return user[1]
-
-
 def get_usernames(conn):
     cur = conn.cursor()
 
