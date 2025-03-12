@@ -26,6 +26,7 @@ class Chatter:
                 system_prompt += "\n"
                 system_prompt += WILL_END_SOON_PROMPT
 
+        # Искусственное начало диалога
         before_chat = Chat()
         before_chat.add_user_message("Привет.")
         before_chat.add_assistant_message("Привет! Как прошел ваш день?")

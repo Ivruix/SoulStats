@@ -6,7 +6,7 @@ class FactExtractor:
     def __init__(self, model):
         self.model = model
 
-    def extract(self, chat):
+    def extract_facts(self, chat):
         chat_str = chat.as_string()
         new_chat = Chat()
         new_chat.add_user_message(chat_str)

@@ -69,7 +69,7 @@ def analyze_chat(conn, sdk, chat_id, user_id):
     # Анализ эмоций
     emotion_analyzer_model = sdk.models.completions("yandexgpt").configure(temperature=0.0)
     emotion_analyzer = EmotionAnalyzer(emotion_analyzer_model)
-    emotion = emotion_analyzer.analyze(chat)
+    emotion = emotion_analyzer.extract_emotion(chat)
     if emotion != Emotion.unknown:
         cur.execute("INSERT INTO main_emotion (chat_id, val) VALUES (%s, %s)", (chat_id, emotion.string))
         conn.commit()
@@ -77,7 +77,7 @@ def analyze_chat(conn, sdk, chat_id, user_id):
     # Извлечение фактов о пользователе
     fact_extractor_model = sdk.models.completions("yandexgpt").configure(temperature=0.0)
     fact_extractor = FactExtractor(fact_extractor_model)
-    facts = fact_extractor.extract(chat)
+    facts = fact_extractor.extract_facts(chat)
     for fact in facts:
         cur.execute("INSERT INTO fact (user_id, content) VALUES (%s, %s)", (user_id, fact))
         conn.commit()
