@@ -9,7 +9,7 @@ from yandex_cloud_ml_sdk import YCloudML
 
 from db.utils import register_user, get_usernames, get_user_id, get_user, get_all_messages, delete_fact
 from ml_backend.agents.chatter import Chatter
-from ml_backend.db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
+from ml_backend.chat_db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
     analyze_chat, get_facts_by_user
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
