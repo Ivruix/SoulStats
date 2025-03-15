@@ -398,7 +398,7 @@ function initializeProfile(token) {
         };
 
 
-        // cancel button
+        // Добавлена новая кнопка
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Отменить';
         cancelButton.classList.add('cancel-btn');
