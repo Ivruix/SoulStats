@@ -397,6 +397,8 @@ function initializeProfile(token) {
             createFact(input.value, newFactDiv);
         };
 
+
+        // cancel button
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Отменить';
         cancelButton.classList.add('cancel-btn');
