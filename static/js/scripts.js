@@ -288,6 +288,84 @@ function initializeProfile(token) {
         }
     };
 
+    window.editFact = function(factId) {
+        const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
+        const span = factElement.querySelector('span');
+        const originalContent = span.textContent;
+
+        // Создаем input для редактирования
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalContent;
+        input.style.width = '70%';
+
+        // Создаем кнопки "Сохранить" и "Отменить"
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Сохранить';
+        saveButton.style.marginLeft = '10px';
+        saveButton.onclick = function() {
+            saveFact(factId, input.value);
+        };
+
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Отменить';
+        cancelButton.style.marginLeft = '10px';
+        cancelButton.onclick = function() {
+            cancelEdit(factId, originalContent);
+        };
+
+        // Очищаем содержимое и добавляем input и кнопки
+        factElement.innerHTML = '';
+        factElement.appendChild(input);
+        factElement.appendChild(saveButton);
+        factElement.appendChild(cancelButton);
+    };
+
+    window.saveFact = function(factId, newContent) {
+        const token = document.body.dataset.token;
+        if (!token) {
+            alert('Токен отсутствует. Пожалуйста, войдите снова.');
+            window.location.href = '/login';
+            return;
+        }
+
+        fetch('/update_fact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ fact_id: factId, content: newContent })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
+                factElement.innerHTML = `
+                    <span>${newContent}</span>
+                    <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+                    <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                `;
+                alert('Факт успешно обновлён.');
+            } else {
+                alert('Ошибка при обновлении факта: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении факта.');
+        });
+    };
+
+    window.cancelEdit = function(factId, originalContent) {
+        const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
+        factElement.innerHTML = `
+            <span>${originalContent}</span>
+            <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+            <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+        `;
+    };
+
     window.goToStats = function() {
         const token = localStorage.getItem("token");
         if (token) {

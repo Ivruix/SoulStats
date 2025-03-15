@@ -326,7 +326,7 @@ def create_fact():
 
 @app.route('/update_fact', methods=['POST'])
 @jwt_required
-def update_fact():
+def     update_fact():
     data = request.get_json()
     if not data or 'fact_id' not in data or 'content' not in data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
