@@ -293,28 +293,25 @@ function initializeProfile(token) {
         const span = factElement.querySelector('span');
         const originalContent = span.textContent;
 
-        // Создаем input для редактирования
         const input = document.createElement('input');
         input.type = 'text';
         input.value = originalContent;
-        input.style.width = '70%';
+        input.classList.add('fact-input');
 
-        // Создаем кнопки "Сохранить" и "Отменить"
         const saveButton = document.createElement('button');
         saveButton.textContent = 'Сохранить';
-        saveButton.style.marginLeft = '10px';
+        saveButton.classList.add('save-btn');
         saveButton.onclick = function() {
             saveFact(factId, input.value);
         };
 
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Отменить';
-        cancelButton.style.marginLeft = '10px';
+        cancelButton.classList.add('cancel-btn');
         cancelButton.onclick = function() {
             cancelEdit(factId, originalContent);
         };
 
-        // Очищаем содержимое и добавляем input и кнопки
         factElement.innerHTML = '';
         factElement.appendChild(input);
         factElement.appendChild(saveButton);
@@ -341,10 +338,14 @@ function initializeProfile(token) {
         .then(data => {
             if (data.status === 'success') {
                 const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
-                factElement.innerHTML = `
-                    <span>${newContent}</span>
-                    <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
-                    <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                factElement.outerHTML = `
+                    <div data-fact-id="${factId}" style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${newContent}</span>
+                        <div style="display: flex; gap: 0rem;">
+                            <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+                            <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                        </div>
+                    </div>
                 `;
                 alert('Факт успешно обновлён.');
             } else {
@@ -359,10 +360,14 @@ function initializeProfile(token) {
 
     window.cancelEdit = function(factId, originalContent) {
         const factElement = document.querySelector(`[data-fact-id="${factId}"]`);
-        factElement.innerHTML = `
-            <span>${originalContent}</span>
-            <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
-            <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+        factElement.outerHTML = `
+            <div data-fact-id="${factId}" style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                <span>${originalContent}</span>
+                <div style="display: flex; gap: 0rem;">
+                    <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+                    <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                </div>
+            </div>
         `;
     };
 
@@ -374,6 +379,80 @@ function initializeProfile(token) {
             window.location.href = "/login";
         }
     };
+
+    window.addFact = function() {
+        const factsContainer = document.getElementById('facts-container');
+        const newFactDiv = document.createElement('div');
+        newFactDiv.classList.add('new-fact');
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Введите новый факт';
+        input.classList.add('fact-input');
+
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Сохранить';
+        saveButton.classList.add('save-btn');
+        saveButton.onclick = function() {
+            createFact(input.value, newFactDiv);
+        };
+
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Отменить';
+        cancelButton.classList.add('cancel-btn');
+        cancelButton.onclick = function() {
+            newFactDiv.remove();
+        };
+
+        newFactDiv.appendChild(input);
+        newFactDiv.appendChild(saveButton);
+        newFactDiv.appendChild(cancelButton);
+        factsContainer.appendChild(newFactDiv);
+    };
+
+    // Функция для отправки нового факта на сервер
+    window.createFact = function(content, newFactDiv) {
+        const token = document.body.dataset.token;
+        if (!token) {
+            alert('Токен отсутствует. Пожалуйста, войдите снова.');
+            window.location.href = '/login';
+            return;
+        }
+
+        fetch('/create_fact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const factId = data.fact_id;
+                newFactDiv.outerHTML = `
+                    <div data-fact-id="${factId}" style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${content}</span>
+                        <div style="display: flex; gap: 0rem;">
+                            <button onclick="editFact(${factId})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+                            <button onclick="deleteFact(${factId})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                        </div>
+                    </div>
+                `;
+                alert('Факт успешно добавлен.');
+            } else {
+                alert('Ошибка при добавлении факта: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при добавлении факта.');
+        });
+    };
+
+    // Привязка обработчика к кнопке "+"
+    document.getElementById('add-fact-btn').addEventListener('click', addFact);
 }
 
 // Stats Functions

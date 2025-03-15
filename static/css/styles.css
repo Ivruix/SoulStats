@@ -268,6 +268,60 @@ header h1 {
     font-weight: 600;
 }
 
+.fact-input {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    width: 70%;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    margin-left: 10px;
+}
+
+.new-fact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 8px;
+    background: #4a90e2;
+    color: #ffffff;
+    border-radius: 10px;
+    position: relative;
+}
+
+.fact-input {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    width: 70%;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    margin-left: 10px;
+}
+
 footer {
     color: #a0a0c0;
     text-align: center;
@@ -416,6 +470,60 @@ body.dark .sidebar::-webkit-scrollbar-thumb:hover {
     background: #5a5a80;
 }
 
+body.dark .fact-input {
+    background: #1e1e2f;
+    color: #e0e0e0;
+}
+
+body.dark .fact-input:focus {
+    background: #25253a;
+}
+
+body.dark .save-btn {
+    background: #4a90e2;
+    color: #ffffff;
+}
+
+body.dark .save-btn:hover {
+    background: #357abd;
+}
+
+body.dark .cancel-btn {
+    background: #3b3b5a;
+    color: #ffffff;
+}
+
+body.dark .cancel-btn:hover {
+    background: #4a4a70;
+}
+
+body.dark .fact-input {
+    background: #1e1e2f;
+    color: #e0e0e0;
+}
+
+body.dark .fact-input:focus {
+    background: #25253a;
+}
+
+body.dark .save-btn {
+    background: #4a90e2;
+    color: #ffffff;
+}
+
+body.dark .save-btn:hover {
+    background: #357abd;
+}
+
+body.dark .cancel-btn {
+    background: #3b3b5a;
+    color: #ffffff;
+}
+
+body.dark .cancel-btn:hover {
+    background: #4a4a70;
+}
+
 /* Light Theme */
 body.light {
     background: linear-gradient(135deg, #f0f4f8 0%, #f5f5f5 100%);
@@ -523,6 +631,64 @@ body.light .sidebar::-webkit-scrollbar-thumb {
 body.light main::-webkit-scrollbar-thumb:hover,
 body.light .sidebar::-webkit-scrollbar-thumb:hover {
     background: #666666;
+}
+
+body.light .fact-input {
+    background: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+}
+
+body.light .fact-input:focus {
+    background: #f0f4f8;
+    border-color: #4a90e2;
+}
+
+body.light .save-btn {
+    background: #4a90e2;
+    color: #ffffff;
+}
+
+body.light .save-btn:hover {
+    background: #357abd;
+}
+
+body.light .cancel-btn {
+    background: #e0e0e0;
+    color: #333333;
+}
+
+body.light .cancel-btn:hover {
+    background: #cccccc;
+}
+
+body.light .fact-input {
+    background: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+}
+
+body.light .fact-input:focus {
+    background: #f0f4f8;
+    border-color: #4a90e2;
+}
+
+body.light .save-btn {
+    background: #4a90e2;
+    color: #ffffff;
+}
+
+body.light .save-btn:hover {
+    background: #357abd;
+}
+
+body.light .cancel-btn {
+    background: #e0e0e0;
+    color: #333333;
+}
+
+body.light .cancel-btn:hover {
+    background: #cccccc;
 }
 
 /* Responsive adjustments */

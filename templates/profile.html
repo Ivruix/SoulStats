@@ -11,16 +11,16 @@
             <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
                 <span style="font-weight: 500; color: #a0a0c0;">ID:</span><br>{{ user_id }}
             </div>
-            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
+            <div style="display: flex; margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px; flex-direction: column; gap: 0.25rem;">
                 <span style="font-weight: 500; color: #a0a0c0;">Факты:</span><br>
-                <div style="margin-top: 10px;">
+                <div id="facts-container" style="margin-top: 10px;">
                     {% if facts %}
                         {% for fact in facts %}
                             <div data-fact-id="{{ fact.fact_id }}" style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
                                 <span>{{ fact.content }}</span>
                                 <div style="display: flex; gap: 0rem;">
-                                <button onclick="editFact({{ fact.fact_id }})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
-                                <button onclick="deleteFact({{ fact.fact_id }})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                                    <button onclick="editFact({{ fact.fact_id }})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
+                                    <button onclick="deleteFact({{ fact.fact_id }})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
                                 </div>
                             </div>
                         {% endfor %}
@@ -28,6 +28,7 @@
                         <p style="color: #a0a0c0;">Фактов пока нет.</p>
                     {% endif %}
                 </div>
+                <button id="add-fact-btn" style="margin-top: 10px; padding: 8px 12px; background: #4a90e2; color: #ffffff; border: none; border-radius: 10px; cursor: pointer;">+</button>
             </div>
         </div>
         <a onclick="goToDashboard()" style="display: block; width: 200px; margin: 20px auto; padding: 12px; text-align: center; background: #4a90e2; color: #ffffff; text-decoration: none; border-radius: 25px; cursor: pointer; transition: background 0.3s ease;">Вернуться в чат</a>
