@@ -569,6 +569,65 @@ function initializeRegister() {
     });
 }
 
+// Recording Voice Functions
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+let audioStream;
+
+function toggleRecording() {
+    if (!isRecording) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                audioStream = stream;
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById("recordButton").style.backgroundColor = "red";
+
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener("stop", () => {
+                    audioStream.getTracks().forEach(track => track.stop());
+
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append("voice", audioBlob, "voice_recording.webm");
+
+                    fetch('/upload-voice', {
+                        method: 'POST',
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            alert("Голосовое сообщение успешно отправлено!");
+                        } else {
+                            alert("Ошибка при отправке голосового сообщения: " + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при отправке голосового сообщения:", error);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error("Ошибка доступа к микрофону:", error);
+                alert("Не удалось получить доступ к микрофону");
+            });
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        document.getElementById("recordButton").style.backgroundColor = "";
+    }
+}
+
 // Initialize on Page Load
 window.onload = function() {
     initializeTheme();

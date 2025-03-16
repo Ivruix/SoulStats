@@ -1,13 +1,14 @@
 import os
+from datetime import datetime
 
 import bcrypt
 import psycopg2
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_mail import Mail
 from yandex_cloud_ml_sdk import YCloudML
 
-from db.utils import register_user, get_usernames, get_user_id, get_user, get_all_messages, delete_fact
+from db.utils import register_user, get_user_id, get_user, get_all_messages, delete_fact
 from ml_backend.agents.chatter import Chatter
 from ml_backend.chat_db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
     analyze_chat, get_facts_by_user
@@ -18,6 +19,13 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
+# Создание папки для голосвых сообщений
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 # Настройки для почты
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -27,6 +35,7 @@ app.config['MAIL_PASSWORD'] = 'test!'  # Укажите пароль от поч
 mail = Mail(app)
 
 PAID_GPT_MESSAGES = 4
+
 
 connection = psycopg2.connect(f"""
     dbname=test
@@ -364,7 +373,6 @@ def stats():
 @app.route('/get_happiness_data', methods=['GET'])
 @jwt_required
 def get_happiness_data():
-    print(1)
     user_id = request.user_id
     try:
         cur = connection.cursor()
@@ -415,6 +423,33 @@ def get_happiness_data():
         print(f"Error in get_happiness_data: {str(e)}")  # Отладочный вывод ошибок
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+@app.route('/upload-voice', methods=['POST'])
+@jwt_required
+def upload_voice():
+    if 'voice' not in request.files:
+        return jsonify({"status": "error", "message": "Файл не найден"}), 400
+
+    voice_file = request.files['voice']
+    if voice_file.filename == '':
+        return jsonify({"status": "error", "message": "Имя файла пустое"}), 400
+
+    user_id = request.user_id
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    parts = voice_file.filename.rsplit('.', 1)
+    if len(parts) == 2:
+        ext = parts[1]
+        new_filename = f"voice_{user_id}_{timestamp}.{ext}"
+    else:
+        new_filename = f"voice_{user_id}_{timestamp}"
+
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+    voice_file.save(save_path)
+
+    print("Голосовой файл успешно получен:", save_path)
+
+    return jsonify({"status": "success", "message": "Файл успешно получен"})
 
 @app.route('/logout')
 def logout():
