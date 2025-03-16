@@ -593,9 +593,9 @@ function toggleRecording() {
                 mediaRecorder.addEventListener("stop", () => {
                     audioStream.getTracks().forEach(track => track.stop());
 
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     const formData = new FormData();
-                    formData.append("voice", audioBlob, "voice_recording.webm");
+                    formData.append("voice", audioBlob, "voice_recording.wav");
 
                     fetch('/upload-voice', {
                         method: 'POST',
