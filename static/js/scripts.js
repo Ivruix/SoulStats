@@ -576,6 +576,9 @@ let isRecording = false;
 let audioStream;
 
 function toggleRecording() {
+    const recordButton = document.getElementById("recordButton");
+    const messageInput = document.getElementById("messageInput");
+
     if (!isRecording) {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
@@ -584,7 +587,8 @@ function toggleRecording() {
                 audioChunks = [];
                 mediaRecorder.start();
                 isRecording = true;
-                document.getElementById("recordButton").style.backgroundColor = "red";
+                recordButton.style.backgroundColor = "red";
+                recordButton.textContent = "⏺️ Запись...";
 
                 mediaRecorder.addEventListener("dataavailable", event => {
                     audioChunks.push(event.data);
@@ -597,7 +601,8 @@ function toggleRecording() {
                     const formData = new FormData();
                     formData.append("voice", audioBlob, "voice_recording.wav");
 
-                    fetch('/upload-voice', {
+                    recordButton.textContent = "⏳ Распознавание...";
+                    fetch('/transcribe-voice', {
                         method: 'POST',
                         headers: {
                             "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -607,13 +612,17 @@ function toggleRecording() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === "success") {
-                            alert("Голосовое сообщение успешно отправлено!");
+                            messageInput.value += data.text; // Добавляем текст
                         } else {
-                            alert("Ошибка при отправке голосового сообщения: " + data.message);
+                            alert("Ошибка при распознавании голосового сообщения: " + data.message);
                         }
                     })
                     .catch(error => {
-                        console.error("Ошибка при отправке голосового сообщения:", error);
+                        console.error("Ошибка при распознавании голосового сообщения:", error);
+                    })
+                    .finally(() => {
+                        recordButton.style.backgroundColor = "";
+                        recordButton.textContent = "🎤";
                     });
                 });
             })
@@ -624,7 +633,8 @@ function toggleRecording() {
     } else {
         mediaRecorder.stop();
         isRecording = false;
-        document.getElementById("recordButton").style.backgroundColor = "";
+        recordButton.style.backgroundColor = "";
+        recordButton.textContent = "🎤";
     }
 }
 

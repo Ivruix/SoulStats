@@ -13,6 +13,7 @@ from ml_backend.agents.chatter import Chatter
 from ml_backend.chat_db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
     analyze_chat, get_facts_by_user
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
+from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
 
 load_dotenv()
 
@@ -424,9 +425,9 @@ def get_happiness_data():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route('/upload-voice', methods=['POST'])
+@app.route('/transcribe-voice', methods=['POST'])
 @jwt_required
-def upload_voice():
+def transcribe_voice():
     if 'voice' not in request.files:
         return jsonify({"status": "error", "message": "Файл не найден"}), 400
 
@@ -447,9 +448,10 @@ def upload_voice():
     save_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
     voice_file.save(save_path)
 
-    print("Голосовой файл успешно получен:", save_path)
+    recognizer = WhisperRecognizer()
+    transcribed_text = recognizer.transcribe(save_path)
 
-    return jsonify({"status": "success", "message": "Файл успешно получен"})
+    return jsonify({"status": "success", "message": "Файл успешно распознан", "text": transcribed_text})
 
 @app.route('/logout')
 def logout():
