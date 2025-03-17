@@ -407,9 +407,9 @@ def get_happiness_data():
         # Пример маппинга значений happiness_level к эмоциям для смайликов
         emojis = []
         for level in levels:
-            if level > 7:
+            if level >= 4:
                 emojis.append('😊')  # Высокий уровень счастья
-            elif level > 4:
+            elif level == 3:
                 emojis.append('🙂')  # Средний уровень
             else:
                 emojis.append('😞')  # Низкий уровень
