@@ -2,25 +2,25 @@ import os
 from datetime import datetime
 
 import bcrypt
-import psycopg2
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_mail import Mail
-from yandex_cloud_ml_sdk import YCloudML
 
-from db.utils import register_user, get_user_id, get_user, get_all_messages, delete_fact
-from ml_backend.agents.chatter import Chatter
-from ml_backend.chat_db.utils import create_or_get_today_chat, add_user_message, add_assistant_message, get_chat_by_chat_id, \
-    analyze_chat, get_facts_by_user
+from ml_backend.utils import analyze_chat, get_next_question
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
+from db.user_data import UserData
+from db.message import Message
+from db.fact import Fact
+from db.chat import Chat
+from db.stats import Stats
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-# Создание папки для голосвых сообщений
+# Создание папки для голосовых сообщений
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -38,18 +38,6 @@ mail = Mail(app)
 PAID_GPT_MESSAGES = 4
 
 
-connection = psycopg2.connect(f"""
-    dbname=test
-    user=postgres
-    password='{os.getenv('DB_PASSWORD')}'
-""")
-
-sdk = YCloudML(
-    folder_id=os.getenv("FOLDER_ID"),
-    auth=os.getenv("YANDEXGPT_API_KEY"),
-)
-
-
 @app.route('/')
 def landing_page():
     return render_template('landing.html')
@@ -65,8 +53,8 @@ def login():
             flash("Все поля должны быть заполнены.", "danger")
             return render_template('login.html')
         # Получаем пользователя из базы данных
-        user_id = get_user_id(connection, username)
-        user = get_user(connection, user_id)
+        user_id = UserData.get_user_id(username)
+        user = UserData.get_user(user_id)
 
         if not user:
             flash("Неверный логин или пароль.", "danger")
@@ -80,7 +68,7 @@ def login():
             return render_template('login.html')
 
         # Создаём чат с пользователем
-        chat_id = create_or_get_today_chat(connection, user_id)
+        chat_id = Chat.create_or_get_today_chat(user_id)
 
         # Создаем JWT токен
         token = create_jwt_token(user_id, db_username, chat_id)
@@ -104,12 +92,7 @@ def register():
             return render_template('register.html')
 
         # Проверяем, что пользователь с таким email или username не существует
-        cur = connection.cursor()
-        cur.execute("SELECT * FROM user_data WHERE email = %s OR username = %s", (email, username))
-        existing_user = cur.fetchone()
-        cur.close()
-
-        if existing_user:
+        if UserData.already_in_use(email, username):
             flash("Пользователь с таким email или именем уже зарегистрирован.", "danger")
             return render_template('register.html')
 
@@ -117,10 +100,10 @@ def register():
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         # Сохраняем пользователя в базу данных
-        register_user(connection, username, email, password_hash)
+        UserData.register_user(username, email, password_hash)
 
         # Сразу же получаем ID нового пользователя
-        user_id = get_user_id(connection, username)
+        user_id = UserData.get_user_id(username)
 
         # Создаём токен
         token = create_jwt_token(user_id, username)
@@ -176,13 +159,10 @@ def dashboard():
     chat_id = payload['chat_id']
 
     # Создаем чат пользователя на сегодня, если его еще нет
-    create_or_get_today_chat(connection, user_id)
+    Chat.create_or_get_today_chat(user_id)
 
     # Получаем список чатов пользователя
-    cur = connection.cursor()
-    cur.execute("SELECT chat_id, created_at FROM chat WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
-    chats = cur.fetchall()
-    cur.close()
+    chats = Chat.get_chats_by_user(user_id)
 
     # Форматируем даты для отображения
     chats = [{"chat_id": chat[0], "created_at": chat[1].strftime("%Y-%m-%d")} for chat in chats]
@@ -196,7 +176,7 @@ def dashboard():
 @jwt_required
 def get_messages(chat_id):
     # Получаем сообщения для указанного chat_id
-    messages = get_all_messages(connection, chat_id)
+    messages = Message.get_all_messages(chat_id)
 
     # Форматируем сообщения для ответа
     messages = [{
@@ -226,30 +206,28 @@ def send_message():
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
 
     # Добавляем сообщение пользователя в базу данных
-    add_user_message(connection, chat_id, content)
+    Message.add_user_message(chat_id, content)
 
     # Получаем чат
-    chat = get_chat_by_chat_id(connection, chat_id)
+    chat = Chat.get_chat_by_chat_id(chat_id)
 
     # Проверяем, что пользователь не превысил лимит сообщений
     if PAID_GPT_MESSAGES <= chat.assistant_message_count():
         return jsonify({"status": "success", "reply": "Вы превысили лимит сообщений на сегодня."})
 
     # Получаем факты о пользователе
-    facts = get_facts_by_user(connection, user_id)
+    facts = Fact.get_facts_by_user(user_id)
     facts = [fact["content"] for fact in facts]
 
     # Получаем ответ ассистента
-    chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
-    chatter = Chatter(chatter_model)
-    new_message = chatter.generate_response(chat, facts, PAID_GPT_MESSAGES - chat.assistant_message_count())
+    new_message = get_next_question(chat, facts, PAID_GPT_MESSAGES - chat.assistant_message_count())
 
     # Добавляем ответ ассистента в базу данных
-    add_assistant_message(connection, chat_id, new_message)
+    Message.add_assistant_message(chat_id, new_message)
 
     # Анализируем чат, если это было последнее сообщение ассистента
     if PAID_GPT_MESSAGES - chat.assistant_message_count() == 1:
-        analyze_chat(connection, sdk, chat_id, user_id)
+        analyze_chat(chat_id, user_id)
 
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
@@ -261,7 +239,7 @@ def profile():
     # Получаем user_id из JWT токена
     user_id = request.user_id
     # Получаем данные пользователя из базы данных
-    user_data = get_user(connection, user_id)
+    user_data = UserData.get_user(user_id)
 
     if not user_data:
         flash("Пользователь не найден.", "danger")
@@ -271,7 +249,7 @@ def profile():
     user_id, username, created_at = user_data
 
     # Получаем факты с их fact_id
-    facts = get_facts_by_user(connection, user_id)
+    facts = Fact.get_facts_by_user(user_id)
 
     # Получаем токен из query-параметра
     token = request.args.get('token')
@@ -295,20 +273,14 @@ def delete_fact_route():
     user_id = request.user_id
 
     try:
-        cur = connection.cursor()
-        cur.execute("SELECT user_id FROM fact WHERE fact_id = %s", (fact_id,))
-        fact_user_id = cur.fetchone()
+        fact_user_id = Fact.get_user_id_by_fact_id(fact_id)
         if not fact_user_id or fact_user_id[0] != user_id:
             return jsonify({"status": "error", "message": "Нет доступа к факту"}), 403
 
-        delete_fact(connection, fact_id)
-        connection.commit()
+        Fact.delete_fact(fact_id)
         return jsonify({"status": "success", "message": "Факт удалён"})
     except Exception as e:
-        connection.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
-    finally:
-        cur.close()
 
 
 @app.route('/create_fact', methods=['POST'])
@@ -322,21 +294,15 @@ def create_fact():
     user_id = request.user_id
 
     try:
-        cur = connection.cursor()
-        cur.execute("INSERT INTO fact (user_id, content) VALUES (%s, %s) RETURNING fact_id", (user_id, content))
-        fact_id = cur.fetchone()[0]
-        connection.commit()
+        fact_id = Fact.create_fact(user_id, content)
         return jsonify({"status": "success", "fact_id": fact_id, "content": content})
     except Exception as e:
-        connection.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
-    finally:
-        cur.close()
 
 
 @app.route('/update_fact', methods=['POST'])
 @jwt_required
-def     update_fact():
+def update_fact():
     data = request.get_json()
     if not data or 'fact_id' not in data or 'content' not in data:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
@@ -346,20 +312,14 @@ def     update_fact():
     user_id = request.user_id
 
     try:
-        cur = connection.cursor()
-        cur.execute("SELECT user_id FROM fact WHERE fact_id = %s", (fact_id,))
-        fact_user_id = cur.fetchone()
-        if not fact_user_id or fact_user_id[0] != user_id:
+        fact_user_id = Fact.get_user_id_by_fact_id(fact_id)
+        if not fact_user_id or fact_user_id != user_id:
             return jsonify({"status": "error", "message": "Нет доступа к факту"}), 403
 
-        cur.execute("UPDATE fact SET content = %s WHERE fact_id = %s", (content, fact_id))
-        connection.commit()
+        Fact.update_fact(fact_id, content)
         return jsonify({"status": "success", "message": "Факт обновлён"})
     except Exception as e:
-        connection.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
-    finally:
-        cur.close()
 
 
 @app.route('/stats')
@@ -376,17 +336,7 @@ def stats():
 def get_happiness_data():
     user_id = request.user_id
     try:
-        cur = connection.cursor()
-        # Получаем данные из таблицы happiness_level через chat_id
-        cur.execute("""
-            SELECT c.created_at, hl.val
-            FROM happiness_level hl
-            JOIN chat c ON hl.chat_id = c.chat_id
-            WHERE c.user_id = %s
-            ORDER BY c.created_at ASC
-        """, (user_id,))
-        data = cur.fetchall()
-        cur.close()
+        data = Stats.get_happiness_level(user_id)
 
         print(f"Fetched data: {data}")  # Добавляем отладочный вывод
 
@@ -452,6 +402,7 @@ def transcribe_voice():
     transcribed_text = recognizer.transcribe(save_path)
 
     return jsonify({"status": "success", "message": "Файл успешно распознан", "text": transcribed_text})
+
 
 @app.route('/logout')
 def logout():

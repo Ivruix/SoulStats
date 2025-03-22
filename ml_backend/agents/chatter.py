@@ -1,5 +1,5 @@
 from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, WILL_END_SOON_PROMPT, CLOSING_MESSAGE_PROMPT, FACTS_PROMTS
-from ml_backend.data_types.chat import Chat
+from ml_backend.data_types.agent_chat import AgentChat
 
 
 class Chatter:
@@ -27,7 +27,7 @@ class Chatter:
                 system_prompt += WILL_END_SOON_PROMPT
 
         # Искусственное начало диалога
-        before_chat = Chat()
+        before_chat = AgentChat()
         before_chat.add_user_message("Привет.")
         before_chat.add_assistant_message("Привет! Как прошел ваш день?")
 

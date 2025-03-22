@@ -36,15 +36,6 @@ CREATE TABLE fact (
   content text
 );
 
-CREATE TABLE event (
-  event_id serial PRIMARY KEY,
-  user_id integer,
-  happens_at date,
-  content text
-);
-
-ALTER TABLE event ADD FOREIGN KEY (user_id) REFERENCES user_data (user_id);
-
 ALTER TABLE fact ADD FOREIGN KEY (user_id) REFERENCES user_data (user_id);
 
 ALTER TABLE chat ADD FOREIGN KEY (user_id) REFERENCES user_data (user_id);

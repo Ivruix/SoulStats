@@ -1,5 +1,5 @@
 from ml_backend.agents.prompts import MOOD_ANALYZER_PROMPT
-from ml_backend.data_types.chat import Chat
+from ml_backend.data_types.agent_chat import AgentChat
 
 
 class MoodAnalyzer:
@@ -8,7 +8,7 @@ class MoodAnalyzer:
 
     def analyze(self, chat):
         chat_str = chat.as_string()
-        new_chat = Chat()
+        new_chat = AgentChat()
         new_chat.add_user_message(chat_str)
 
         result = self.model.run(new_chat.with_system_prompt(MOOD_ANALYZER_PROMPT).as_list())[0].text

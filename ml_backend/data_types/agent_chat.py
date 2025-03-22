@@ -1,4 +1,4 @@
-class Chat:
+class AgentChat:
     def __init__(self, messages=None):
         if messages is None:
             self.messages = []
@@ -7,7 +7,7 @@ class Chat:
 
     @staticmethod
     def from_db_messages(messages):
-        chat = Chat()
+        chat = AgentChat()
         for content, by_user in messages:
             if by_user:
                 chat.add_user_message(content)
@@ -32,7 +32,7 @@ class Chat:
         )
 
     def with_chat(self, other):
-        return Chat(self.messages + other.messages)
+        return AgentChat(self.messages + other.messages)
 
     def with_system_prompt(self, system_prompt, user_message=None):
         prompt_dict = {
@@ -40,7 +40,7 @@ class Chat:
             "text": system_prompt
         }
 
-        return Chat([prompt_dict] + self.messages)
+        return AgentChat([prompt_dict] + self.messages)
 
     def as_list(self):
         return self.messages

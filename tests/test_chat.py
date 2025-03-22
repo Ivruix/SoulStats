@@ -1,10 +1,10 @@
 import unittest
-from ml_backend.data_types.chat import Chat
+from ml_backend.data_types.agent_chat import AgentChat
 
 
 class TestChat(unittest.TestCase):
     def setUp(self):
-        self.chat = Chat()
+        self.chat = AgentChat()
 
     def test_add_user_message(self):
         self.chat.add_user_message("Привет!")
@@ -19,7 +19,7 @@ class TestChat(unittest.TestCase):
         self.assertEqual(self.chat.messages[0]["text"], "Здравствуйте!")
 
     def test_with_chat(self):
-        other_chat = Chat()
+        other_chat = AgentChat()
         other_chat.add_user_message("Как дела?")
         combined_chat = self.chat.with_chat(other_chat)
         self.assertEqual(len(combined_chat), 1)
