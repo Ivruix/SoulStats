@@ -11,12 +11,12 @@ class TestChatter(unittest.TestCase):
 
     def test_generate_response(self):
         chat = AgentChat()
-        chat.add_user_message("Как прошел ваш день?")
-        self.model.run.return_value = [Mock(text="Мой день прошел хорошо.")]
+        chat.add_user_message("Мой день прошел хорошо.")
+        self.model.run.return_value = [Mock(text="Что именно вам понравилось?")]
 
         response = self.chatter.generate_response(chat, [], 3)
 
-        self.assertEqual(response, "Мой день прошел хорошо.")
+        self.assertEqual(response, "Что именно вам понравилось?")
 
 
 if __name__ == '__main__':

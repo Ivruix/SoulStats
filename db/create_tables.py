@@ -1,7 +1,4 @@
-from dotenv import load_dotenv
 from connection import get_connection
-
-load_dotenv()
 
 conn = get_connection()
 
