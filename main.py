@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 import bcrypt
 from dotenv import load_dotenv
+from datetime import date
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_mail import Mail
@@ -16,6 +17,8 @@ from db.message import Message
 from db.fact import Fact
 from db.chat import Chat
 from db.stats import Stats
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
 
@@ -438,5 +441,25 @@ def logout():
     """
 
 
+def end_old_chats():
+    print("Ending old chats...")
+    current_date = date.today()
+    active_chats = Chat.get_active_chats()
+    ended = 0
+    for chat_id, user_id, created_at in active_chats:
+        if created_at < current_date:
+            ended += 1
+            analyze_chat(chat_id, user_id)
+            Chat.mark_chat_as_ended(chat_id)
+    print(f"Ended {ended} old chats.")
+
+
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(end_old_chats, 'interval', hours=1)
+    scheduler.start()
+
+
 if __name__ == '__main__':
+    start_scheduler()
     app.run(debug=True)

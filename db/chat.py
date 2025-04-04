@@ -16,7 +16,7 @@ class Chat:
 
         # Сравниваем, если сегодня чата еще не было, создаем
         if last_chat_date is None or last_chat_date != current_date:
-            cur.execute("INSERT INTO chat (user_id, created_at) VALUES (%s, %s)", (user_id, current_date))
+            cur.execute("INSERT INTO chat (user_id, created_at, has_ended) VALUES (%s, %s, False)", (user_id, current_date))
             conn.commit()
 
         cur.execute("SELECT chat_id FROM chat WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
@@ -66,3 +66,15 @@ class Chat:
         conn.commit()
         cur.close()
         conn.close()
+
+    @staticmethod
+    def get_active_chats():
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT chat_id, user_id, created_at FROM chat WHERE has_ended = FALSE")
+        active_chats = cur.fetchall()
+
+        cur.close()
+        conn.close()
+        return active_chats
