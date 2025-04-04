@@ -1,14 +1,16 @@
 import os
 from datetime import datetime
-
 import bcrypt
 from dotenv import load_dotenv
+
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_mail import Mail
 
-from ml_backend.utils import analyze_chat, get_next_question
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
+
+from ml_backend.utils import analyze_chat, get_next_question, should_extend_chat
 from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
+
 from db.user_data import UserData
 from db.message import Message
 from db.fact import Fact
@@ -35,7 +37,7 @@ app.config['MAIL_USERNAME'] = 'thegoomba4@gmail.com'  # Укажите почт�
 app.config['MAIL_PASSWORD'] = 'test!'  # Укажите пароль от почты
 mail = Mail(app)
 
-PAID_GPT_MESSAGES = 4
+MAX_PAID_GPT_MESSAGES = 10
 
 
 @app.route('/')
@@ -205,32 +207,45 @@ def send_message():
     if not chat_id or not content:
         return jsonify({"status": "error", "message": "Неверные данные"}), 400
 
+    # Проверяем, что пользователь не превысил лимит сообщений
+    if Chat.get_chat_by_chat_id(chat_id).assistant_message_count() >= MAX_PAID_GPT_MESSAGES:
+        return jsonify({"status": "success", "reply": "Вы превысили лимит сообщений на сегодня."})
+
+    # Проверяем, завершен ли чат
+    if Chat.has_ended(chat_id):
+        return jsonify({"status": "success", "reply": "Чат завершен."})
+
     # Добавляем сообщение пользователя в базу данных
     Message.add_user_message(chat_id, content)
 
     # Получаем чат
     chat = Chat.get_chat_by_chat_id(chat_id)
 
-    # Проверяем, что пользователь не превысил лимит сообщений
-    if PAID_GPT_MESSAGES <= chat.assistant_message_count():
-        return jsonify({"status": "success", "reply": "Вы превысили лимит сообщений на сегодня."})
-
     # Получаем факты о пользователе
     facts = Fact.get_facts_by_user(user_id)
     facts = [fact["content"] for fact in facts]
 
     # Получаем ответ ассистента
-    new_message = get_next_question(chat, facts, PAID_GPT_MESSAGES - chat.assistant_message_count())
+    last_message = MAX_PAID_GPT_MESSAGES - chat.assistant_message_count() == 1 or not should_extend_chat(chat)
+    new_message = get_next_question(chat, facts, last_message)
 
     # Добавляем ответ ассистента в базу данных
     Message.add_assistant_message(chat_id, new_message)
 
-    # Анализируем чат, если это было последнее сообщение ассистента
-    if PAID_GPT_MESSAGES - chat.assistant_message_count() == 1:
+    # Если чат завершен
+    if last_message:
         analyze_chat(chat_id, user_id)
+        Chat.mark_chat_as_ended(chat_id)
 
     # Возвращаем ответ
     return jsonify({"status": "success", "reply": new_message})
+
+
+@app.route('/chat-ended/<int:chat_id>', methods=['GET'])
+@jwt_required
+def chat_ended(chat_id):
+    ended = Chat.has_ended(chat_id)
+    return jsonify({"status": "success", "ended": ended})
 
 
 @app.route('/profile')

@@ -49,7 +49,6 @@ function initializeDashboard(token, userId, chatId) {
         localStorage.setItem("token", token);
     }
 
-    const MESSAGE_LIMIT = 4 * 2; // 4 сообщения от ассистента
     let currentChatId = chatId;
 
     window.toggleSidebar = function() {
@@ -76,23 +75,34 @@ function initializeDashboard(token, userId, chatId) {
         })
         .then(data => {
             if (data.status === 'success') {
-                const messageCount = data.messages.length;
                 const inputContainer = document.getElementById('input-container');
                 const sendButton = document.getElementById('sendButton');
                 const messageInput = document.getElementById('messageInput');
                 const limitMessage = document.getElementById('limit-message');
 
-                if (messageCount >= MESSAGE_LIMIT) {
-                    inputContainer.classList.add('disabled');
-                    sendButton.disabled = true;
-                    messageInput.disabled = true;
-                    limitMessage.style.display = 'block';
-                } else {
-                    inputContainer.classList.remove('disabled');
-                    sendButton.disabled = false;
-                    messageInput.disabled = false;
-                    limitMessage.style.display = 'none';
-                }
+                fetch(`/chat-ended/${chatId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem("token")}`
+                    }
+                })
+                .then(response => response.json())
+                .then(chatData => {
+                    if (chatData.status === 'success' && chatData.ended) {
+                        inputContainer.classList.add('disabled');
+                        sendButton.disabled = true;
+                        messageInput.disabled = true;
+                        limitMessage.style.display = 'block';
+                    } else {
+                        inputContainer.classList.remove('disabled');
+                        sendButton.disabled = false;
+                        messageInput.disabled = false;
+                        limitMessage.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при проверке статуса чата:', error);
+                });
             }
         })
         .catch(error => {

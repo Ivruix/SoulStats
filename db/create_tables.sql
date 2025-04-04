@@ -9,7 +9,8 @@ CREATE TABLE user_data (
 CREATE TABLE chat (
   chat_id serial PRIMARY KEY,
   user_id integer,
-  created_at date
+  created_at date,
+  has_ended boolean
 );
 
 CREATE TABLE message (

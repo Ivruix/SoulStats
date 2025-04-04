@@ -7,6 +7,7 @@ from ml_backend.agents.emotion_analyzer import EmotionAnalyzer
 from ml_backend.agents.mood_analyzer import MoodAnalyzer
 from ml_backend.agents.fact_extractor import FactExtractor
 from ml_backend.agents.chatter import Chatter
+from ml_backend.agents.chat_extender import ChatExtender
 from yandex_cloud_ml_sdk import YCloudML
 
 load_dotenv()
@@ -19,13 +20,21 @@ def get_sdk():
     )
 
 
-def get_next_question(chat, facts, messages_left):
+def get_next_question(chat, facts, last_message):
     sdk = get_sdk()
     chatter_model = sdk.models.completions("yandexgpt").configure(temperature=0.2)
     chatter = Chatter(chatter_model)
-    new_message = chatter.generate_response(chat, facts, messages_left)
+    new_message = chatter.generate_response(chat, facts, last_message)
 
     return new_message
+
+
+def should_extend_chat(chat):
+    sdk = get_sdk()
+    chat_extender_model = sdk.models.completions("yandexgpt").configure(temperature=0.0)
+    chat_extender = ChatExtender(chat_extender_model)
+    should_extend = chat_extender.should_extend(chat)
+    return should_extend
 
 
 def analyze_chat(chat_id, user_id):

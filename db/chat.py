@@ -47,3 +47,22 @@ class Chat:
         cur.close()
         conn.close()
         return chats
+
+    @staticmethod
+    def has_ended(chat_id):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT has_ended FROM chat WHERE chat_id = %s", (chat_id,))
+        ended = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+        return ended
+
+    @staticmethod
+    def mark_chat_as_ended(chat_id):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE chat SET has_ended = TRUE WHERE chat_id = %s", (chat_id,))
+        conn.commit()
+        cur.close()
+        conn.close()

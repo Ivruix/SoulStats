@@ -6,9 +6,9 @@ class Chatter:
     def __init__(self, model):
         self.model = model
 
-    def generate_response(self, chat, facts, messages_left):
-        # messages_left - сколько сообщений ассистенту осталось написать
-        if messages_left == 1:
+    def generate_response(self, chat, facts, last_message):
+        # last_message - True, если это последний вопрос в чате
+        if last_message:
             system_prompt = CLOSING_MESSAGE_PROMPT
         else:
             # Промпт для ассистента
@@ -20,11 +20,6 @@ class Chatter:
                 system_prompt += FACTS_PROMTS
                 for fact in facts:
                     system_prompt += f"- {fact}\n"
-
-            # Если осталось мало сообщений, добавляем предупреждение
-            if messages_left <= 2:
-                system_prompt += "\n"
-                system_prompt += WILL_END_SOON_PROMPT
 
         # Искусственное начало диалога
         before_chat = AgentChat()

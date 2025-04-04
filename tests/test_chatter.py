@@ -14,7 +14,7 @@ class TestChatter(unittest.TestCase):
         chat.add_user_message("Мой день прошел хорошо.")
         self.model.run.return_value = [Mock(text="Что именно вам понравилось?")]
 
-        response = self.chatter.generate_response(chat, [], 3)
+        response = self.chatter.generate_response(chat, [], False)
 
         self.assertEqual(response, "Что именно вам понравилось?")
 
