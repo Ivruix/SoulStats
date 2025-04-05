@@ -7,7 +7,7 @@ load_dotenv()
 
 def get_connection():
     return psycopg2.connect(f"""
-        dbname=test
+        dbname=prod
         user=postgres
         password={os.getenv('DB_PASSWORD')}
     """)
