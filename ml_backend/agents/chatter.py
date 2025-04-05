@@ -1,12 +1,16 @@
 from yandex_cloud_ml_sdk._models.completions.result import AlternativeStatus
 
 from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, CLOSING_MESSAGE_PROMPT, FACTS_PROMTS
+from ml_backend.agents.yandex_sdk import get_sdk
 from ml_backend.data_types.agent_chat import AgentChat
 
 
 class Chatter:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, temperature=0.2):
+        sdk = get_sdk()
+        chatter_model = sdk.models.completions("yandexgpt")
+        chatter_model = chatter_model.configure(temperature=temperature)
+        self.model = chatter_model
 
     def generate_response(self, chat, facts, last_message):
         # last_message - True, если это последний вопрос в чате

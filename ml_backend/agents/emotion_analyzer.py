@@ -1,13 +1,17 @@
 from yandex_cloud_ml_sdk._models.completions.result import AlternativeStatus
 
 from ml_backend.agents.prompts import EMOTION_ANALYZER_PROMPT
+from ml_backend.agents.yandex_sdk import get_sdk
 from ml_backend.data_types.agent_chat import AgentChat
 from ml_backend.data_types.emotion import Emotion
 
 
 class EmotionAnalyzer:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, temperature=0.0):
+        sdk = get_sdk()
+        emotion_analyzer_model = sdk.models.completions("yandexgpt")
+        emotion_analyzer_model = emotion_analyzer_model.configure(temperature=temperature)
+        self.model = emotion_analyzer_model
 
     def extract_emotion(self, chat):
         chat_str = chat.as_string()
