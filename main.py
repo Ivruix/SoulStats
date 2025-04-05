@@ -235,7 +235,11 @@ def send_message():
     # Добавляем ответ ассистента в базу данных
     Message.add_assistant_message(chat_id, new_message)
 
-    # Если чат завершен
+    # Проверяем, сработал ли фильтр
+    if new_message == "Давайте завершим этот диалог.":
+        last_message = True
+
+    # Если чат завершен, анализируем его и помечаем как завершенный
     if last_message:
         analyze_chat(chat_id, user_id)
         Chat.mark_chat_as_ended(chat_id)

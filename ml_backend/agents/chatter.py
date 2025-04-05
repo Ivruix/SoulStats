@@ -1,4 +1,6 @@
-from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, WILL_END_SOON_PROMPT, CLOSING_MESSAGE_PROMPT, FACTS_PROMTS
+from yandex_cloud_ml_sdk._models.completions.result import AlternativeStatus
+
+from ml_backend.agents.prompts import MESSAGE_WRITER_PROMPT, CLOSING_MESSAGE_PROMPT, FACTS_PROMTS
 from ml_backend.data_types.agent_chat import AgentChat
 
 
@@ -27,7 +29,9 @@ class Chatter:
         before_chat.add_assistant_message("Привет! Как прошел ваш день?")
 
         print(before_chat.with_chat(chat).with_system_prompt(system_prompt).as_list())
+        result = self.model.run(before_chat.with_chat(chat).with_system_prompt(system_prompt).as_list())[0]
 
-        result = self.model.run(before_chat.with_chat(chat).with_system_prompt(system_prompt).as_list())[0].text
+        if result.status == AlternativeStatus.CONTENT_FILTER:
+            return "Давайте завершим этот диалог."
 
-        return result
+        return result.text
