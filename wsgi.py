@@ -1,4 +1,5 @@
-from main import app
+from main import app, start_scheduler
 
 if __name__ == "__main__":
+    start_scheduler()
     app.run()
