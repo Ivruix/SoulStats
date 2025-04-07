@@ -6,13 +6,14 @@ from unittest.mock import Mock
 
 class TestFactExtractor(unittest.TestCase):
     def setUp(self):
-        self.model = Mock()
-        self.fact_extractor = FactExtractor(self.model)
+        self.fact_extractor = FactExtractor()
+        self.fact_extractor.model = Mock()
+        self.model = self.fact_extractor.model
 
     def test_extract_facts(self):
         chat = AgentChat()
         chat.add_user_message("Я работаю программистом.")
-        self.model.run.return_value = [Mock(text="Пользователь работает программистом.")]
+        self.model.run.return_value = [Mock(text="{\"facts\":[\"Пользователь работает программистом.\"]}")]
 
         facts = self.fact_extractor.extract_facts(chat)
 

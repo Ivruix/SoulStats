@@ -6,8 +6,9 @@ from unittest.mock import Mock
 
 class TestMoodAnalyzer(unittest.TestCase):
     def setUp(self):
-        self.model = Mock()
-        self.mood_analyzer = MoodAnalyzer(self.model)
+        self.mood_analyzer = MoodAnalyzer()
+        self.mood_analyzer.model = Mock()
+        self.model = self.mood_analyzer.model
 
     def test_analyze(self):
         chat = AgentChat()

@@ -7,8 +7,9 @@ from unittest.mock import Mock
 
 class TestEmotionAnalyzer(unittest.TestCase):
     def setUp(self):
-        self.model = Mock()
-        self.emotion_analyzer = EmotionAnalyzer(self.model)
+        self.emotion_analyzer = EmotionAnalyzer()
+        self.emotion_analyzer.model = Mock()
+        self.model = self.emotion_analyzer.model
 
     def test_extract_emotion(self):
         chat = AgentChat()

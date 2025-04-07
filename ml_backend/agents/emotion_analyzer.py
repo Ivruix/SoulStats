@@ -18,7 +18,6 @@ class EmotionAnalyzer:
         new_chat = AgentChat()
         new_chat.add_user_message(chat_str)
         result = self.model.run(new_chat.with_system_prompt(EMOTION_ANALYZER_PROMPT).as_list())[0]
-
         if result.status == AlternativeStatus.CONTENT_FILTER:
             return Emotion.unknown
 

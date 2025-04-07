@@ -6,8 +6,9 @@ from unittest.mock import Mock
 
 class TestChatter(unittest.TestCase):
     def setUp(self):
-        self.model = Mock()
-        self.chatter = Chatter(self.model)
+        self.chatter = Chatter()
+        self.chatter.model = Mock()
+        self.model = self.chatter.model
 
     def test_generate_response(self):
         chat = AgentChat()
