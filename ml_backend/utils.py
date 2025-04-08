@@ -26,6 +26,8 @@ def analyze_chat(chat_id, user_id):
     cur = conn.cursor()
 
     chat = Chat.get_chat_by_chat_id(chat_id)
+    if len(chat) == 0:
+        return
 
     # Анализ настроения
     mood_analyzer = MoodAnalyzer()
