@@ -353,47 +353,155 @@ def stats():
     return render_template('stats.html', token=token)
 
 
-@app.route('/get_happiness_data', methods=['GET'])
+@app.route('/get_happiness_by_period', methods=['GET'])
 @jwt_required
-def get_happiness_data():
+def get_happiness_by_period():
     user_id = request.user_id
+    period = request.args.get('period', 'all')  # 'week', 'month' или 'all'
     try:
-        data = Stats.get_happiness_level(user_id)
-
-        print(f"Fetched data: {data}")  # Добавляем отладочный вывод
-
-        # Преобразуем данные для фронтенда
+        data = Stats.get_happiness_by_period(user_id, period)
         if not data:
-            print("No happiness data found for user_id:", user_id)
             return jsonify({
                 'dates': [],
                 'levels': [],
-                'days_of_week': [],
                 'emojis': []
             })
 
         dates = [row[0].strftime('%Y-%m-%d') for row in data]
         levels = [row[1] for row in data]
-        days_of_week = [row[0].strftime('%a') for row in data]  # Получаем сокращённые названия дней (Mon, Tue, ...)
 
-        # Пример маппинга значений happiness_level к эмоциям для смайликов
-        emojis = []
-        for level in levels:
-            if level >= 4:
-                emojis.append('😊')  # Высокий уровень счастья
-            elif level == 3:
-                emojis.append('🙂')  # Средний уровень
-            else:
-                emojis.append('😞')  # Низкий уровень
+        # Эмодзи в зависимости от уровня счастья
+        emoji_map = {
+            5: "😄",
+            4: "🙂",
+            3: "😐",
+            2: "😔",
+            1: "😢"
+        }
+        emojis = [emoji_map.get(level, "😐") for level in levels]
 
         return jsonify({
             'dates': dates,
             'levels': levels,
-            'days_of_week': days_of_week,
             'emojis': emojis
         })
     except Exception as e:
-        print(f"Error in get_happiness_data: {str(e)}")  # Отладочный вывод ошибок
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/get_happiness_by_day_of_week', methods=['GET'])
+@jwt_required
+def get_happiness_by_day_of_week():
+    user_id = request.user_id
+    try:
+        data = Stats.get_average_happiness_by_day_of_week(user_id)
+        if not data:
+            return jsonify({
+                'days': [],
+                'levels': [],
+                'emojis': []
+            })
+
+        days = [row[0] for row in data]  # День недели
+        levels = [row[1] for row in data]  # Средний уровень счастья
+        days_map = {
+            "Monday": "Понедельник",
+            "Tuesday": "Вторник",
+            "Wednesday": "Среда",
+            "Thursday": "Четверг",
+            "Friday": "Пятница",
+            "Saturday": "Суббота",
+            "Sunday": "Воскресенье"
+        }
+        days = [days_map.get(day.strip(), day.strip()) for day in days]  # Переводим дни недели на русский
+
+        emojis = []
+        for level in levels:
+            if level >= 4.5:
+                emojis.append("😄")
+            elif level >= 3.5:
+                emojis.append("🙂")
+            elif level >= 2.5:
+                emojis.append("😐")
+            elif level >= 1.5:
+                emojis.append("😔")
+            else:
+                emojis.append("😢")
+
+        return jsonify({
+            'days': days,
+            'levels': levels,
+            'emojis': emojis
+        })
+    except Exception as e:
+        print(e)
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/get_happiness_by_emotion', methods=['GET'])
+@jwt_required
+def get_happiness_by_emotion():
+    user_id = request.user_id
+    try:
+        data = Stats.get_average_happiness_by_emotion(user_id)
+        if not data:
+            return jsonify({
+                'emotions': [],
+                'levels': [],
+                'counts': []
+            })
+
+        emotions = [row[0] for row in data]
+        levels = [row[1] for row in data]  # Средний уровень счастья
+        counts = [row[2] for row in data]  # Количество записей для каждой эмоции
+
+        return jsonify({
+            'emotions': emotions,
+            'levels': levels,
+            'counts': counts
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/get_emotions_by_period', methods=['GET'])
+@jwt_required
+def get_emotions_by_period():
+    user_id = request.user_id
+    period = request.args.get('period', 'all')  # 'week', 'month' или 'all'
+    try:
+        data = Stats.get_emotions_by_period(user_id, period)
+        if not data:
+            return jsonify({
+                'dates': [],
+                'emotions': [],
+                'colors': []
+            })
+
+        dates = [row[0].strftime('%Y-%m-%d') for row in data]
+        emotions = [row[1] for row in data]
+
+        # Цветовая схема для разных эмоций
+        color_map = {
+            'радость': '#4CAF50',  # зеленый
+            'грусть': '#2196F3',  # синий
+            'гнев': '#F44336',  # красный
+            'тревога': '#9C27B0',  # фиолетовый
+            'разочарование': '#607D8B',  # серо-синий
+            'надежда': '#FFC107',  # желтый
+            'удивление': '#FF9800',  # оранжевый
+            'нейтральное': '#9E9E9E',  # серый
+            'неизвестное': '#616161'  # темно-серый
+        }
+
+        colors = [color_map.get(emotion.lower(), '#607D8B') for emotion in emotions]  # серый по умолчанию
+
+        return jsonify({
+            'dates': dates,
+            'emotions': emotions,
+            'colors': colors
+        })
+    except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 

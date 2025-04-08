@@ -484,9 +484,11 @@ function initializeStats(token) {
 
     // Функция для построения графиков
     function drawHappinessCharts() {
-        const token = document.body.dataset.token;
-        fetch('/get_happiness_data', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem("token")}` }
+        const token = localStorage.getItem("token");
+
+        // Запрос данных для графика по периодам
+        fetch('/get_happiness_by_period', {
+            headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(response => {
             if (!response.ok) throw new Error('Ошибка сети');
@@ -498,15 +500,16 @@ function initializeStats(token) {
                 x: data.dates,
                 y: data.levels,
                 mode: 'lines+markers',
-                line: { color: 'green' },
+                line: { color: 'gray' },
                 marker: {
                     size: 12,
                     symbol: 'circle',
-                    color: data.levels.map(level => level > 7 ? 'green' : level > 4 ? 'yellow' : 'red')
+                    color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red')
                 },
                 text: data.emojis,
                 hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
             };
+
             Plotly.newPlot('happiness-period-chart', [periodTrace], {
                 title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
                 xaxis: { title: 'Период', color: '#a0a0c0' },
@@ -514,22 +517,36 @@ function initializeStats(token) {
                 paper_bgcolor: 'transparent',
                 plot_bgcolor: 'transparent'
             });
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке данных по периодам:', error);
+        });
 
+        // Запрос данных для графика по дням недели
+        fetch('/get_happiness_by_day_of_week', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Ошибка сети');
+            return response.json();
+        })
+        .then(data => {
             // Столбчатая диаграмма по дням недели
             const dayTrace = {
-                x: data.days_of_week,
+                x: data.days,
                 y: data.levels,
                 type: 'bar',
                 marker: {
-                    color: 'green',
+                    color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red'),
                     line: { width: 1, color: 'rgba(0, 0, 0, 0.1)' }
                 },
                 text: data.emojis,
                 textposition: 'auto',
                 hovertemplate: '%{text}<br>День: %{x}<br>Уровень: %{y}<extra></extra>'
             };
+
             Plotly.newPlot('happiness-day-chart', [dayTrace], {
-                title: { text: 'Уровень счастья по дням недели', font: { color: '#a0a0c0' } },
+                title: { text: 'Средний уровень счастья по дням недели', font: { color: '#a0a0c0' } },
                 xaxis: { title: 'День недели', color: '#a0a0c0' },
                 yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
                 paper_bgcolor: 'transparent',
@@ -537,8 +554,7 @@ function initializeStats(token) {
             });
         })
         .catch(error => {
-            console.error('Ошибка:', error);
-            alert('Не удалось загрузить статистику.');
+            console.error('Ошибка при загрузке данных по дням недели:', error);
         });
     }
 
