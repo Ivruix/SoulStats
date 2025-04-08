@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import bcrypt
+from apscheduler.schedulers.blocking import BlockingScheduler
 from dotenv import load_dotenv
 from datetime import date
 
@@ -566,12 +567,22 @@ def end_old_chats():
     print(f"Ended {ended} old chats.")
 
 
-def start_scheduler():
+def start_blocking_scheduler():
+    end_old_chats()
+
+    scheduler = BlockingScheduler()
+    scheduler.add_job(end_old_chats, 'interval', hours=1)
+    scheduler.start()
+
+
+def start_background_scheduler():
+    end_old_chats()
+
     scheduler = BackgroundScheduler()
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 
 
 if __name__ == '__main__':
-    start_scheduler()
+    start_background_scheduler()
     app.run(debug=True)
