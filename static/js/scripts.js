@@ -49,6 +49,11 @@ function initializeDashboard(token, userId, chatId) {
         localStorage.setItem("token", token);
     }
 
+        window.onload = function () {
+        const messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
+    };
+
     let currentChatId = chatId;
 
     window.toggleSidebar = function() {
@@ -240,6 +245,14 @@ function initializeDashboard(token, userId, chatId) {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.add('hidden');
     }
+
+    window.addEventListener('resize', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (window.innerWidth >= 760) {
+        sidebar.classList.remove('hidden');
+    } else {
+    sidebar.classList.add('hidden');}
+    });
 }
 
 // Profile Functions

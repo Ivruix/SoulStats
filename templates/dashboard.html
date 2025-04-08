@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Умный дневник - Диалог с ассистентом</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
-        /* Additional styles for SVG buttons and mobile responsiveness */
+        /* Дополнительные стили для кнопок и адаптивности */
         .header-buttons button {
             display: flex;
             align-items: center;
@@ -25,8 +25,8 @@
             padding: 8px;
         }
 
-        /* Style for the limit message */
-        .limit-message {
+        /* Стили для сообщений лимита и приветствия */
+        .limit-message, .welcome-message {
             margin: 20px auto;
             padding: 20px;
             border: 2px solid #a0a0c0;
@@ -38,49 +38,36 @@
             background: rgba(0, 0, 0, 0.2);
         }
 
-        /* Style for the welcome message */
-        .welcome-message {
-            margin: 20px auto;
-            padding: 20px;
-            border: 2px solid #a0a0c0;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 80%;
-            font-size: 1.1rem;
-            color: #e0e0e0;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* Disabled state for input and button */
+        /* Отключенное состояние для ввода и кнопок */
         .input-container.disabled input,
         .input-container.disabled button {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        /* Hamburger menu button */
+        /* Кнопка гамбургера */
         .hamburger {
-            display: none; /* Hidden by default on desktop */
+            display: none;
             font-size: 1.5rem;
             background: none;
             border: none;
             cursor: pointer;
             color: #ffffff;
             padding: 8px;
-            z-index: 1002; /* Ensure it's above sidebar */
+            z-index: 1002;
         }
 
-        /* Sidebar toggle styles */
+        /* Стили переключения боковой панели */
         .sidebar {
             transition: transform 0.3s ease;
-            transform: translateX(0); /* Visible by default */
+            transform: translateX(0);
         }
 
         .sidebar.hidden {
-            transform: translateX(-100%); /* Hidden state */
+            transform: translateX(-100%);
         }
 
-        /* Responsive adjustments */
+        /* Адаптивные корректировки */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -91,11 +78,11 @@
                 background: #25253a;
                 border-right: 1px solid #3b3b5a;
                 z-index: 1001;
-                transform: translateX(-100%); /* Hidden by default on mobile */
+                transform: translateX(-100%);
             }
 
-            .sidebar.hidden {
-                transform: translateX(-100%); /* Ensure hidden state */
+            .sidebar:not(.hidden) {
+                transform: translateX(0);
             }
 
             .hamburger {
@@ -117,16 +104,11 @@
                 left: 0;
                 width: 100%;
             }
-
-            /* Ensure sidebar buttons are visible */
-            .sidebar .header-buttons {
-                display: flex;
-            }
         }
     </style>
 </head>
 <body class="dark dashboard-page" data-token="{{ token }}" data-user-id="{{ user_id }}" data-chat-id="{{ chat_id }}">
-    <!-- Sidebar -->
+    <!-- Боковая панель -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-elements">
             <div class="sidebar-head">
@@ -154,7 +136,7 @@
         </div>
     </div>
 
-    <!-- Main chat area -->
+    <!-- Основная область чата -->
     <div class="chat-container">
         <header class="header-dashboard">
             <button class="hamburger" id="hamburger-btn">☰</button>
@@ -164,17 +146,14 @@
 
         <main>
             <div class="messages" id="messages">
-                <!-- Начальное сообщение -->
                 <div class="message assistant">
                     <p>Йоу, как прошёл ваш день?</p>
                     <div class="message-time">12:00</div>
                 </div>
             </div>
-            <!-- Container for the welcome message -->
             <div id="welcome-message" class="welcome-message" style="display: none;">
                 <p>Привет! Как прошел ваш день?</p>
             </div>
-            <!-- Container for the limit message -->
             <div id="limit-message" class="limit-message" style="display: none;">
                 <p>Чат завершен. Приходите завтра!</p>
             </div>
@@ -190,13 +169,13 @@
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     <script>
         window.goToStats = function() {
-        const token = localStorage.getItem("token");
-        if (token) {
-            window.location.href = `/stats?token=${token}`;
-        } else {
-            window.location.href = "/login";
-        }
-    };
+            const token = localStorage.getItem("token");
+            if (token) {
+                window.location.href = `/stats?token=${token}`;
+            } else {
+                window.location.href = "/login";
+            }
+        };
     </script>
 </body>
 </html>

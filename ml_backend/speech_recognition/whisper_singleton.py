@@ -1,5 +1,5 @@
 import threading
-import whisper
+# import whisper
 
 
 class WhisperRecognizer:

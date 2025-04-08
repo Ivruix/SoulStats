@@ -76,7 +76,7 @@ body {
     background: #25253a;
     border-right: 1px solid #3b3b5a;
     z-index: 1001;
-    transform: translateX(0); /* Visible by default */
+    transform: translateX(0);
     transition: transform 0.3s ease;
 }
 
@@ -119,13 +119,12 @@ header {
 }
 
 main {
-    margin-top: 0.5rem;
-    margin-bottom: 80px;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    box-sizing: border-box;
 }
 
 .messages {
@@ -140,7 +139,7 @@ main {
     border-radius: 15px;
     line-height: 1.5;
     position: relative;
-    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .message.user {
@@ -180,6 +179,7 @@ main {
     bottom: 0;
     left: 250px;
     right: 0;
+        z-index: 1001;
 }
 
 .input-container.disabled input,
@@ -215,6 +215,8 @@ main {
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    min-width: 40px;
+    min-height: 40px;
 }
 
 .input-container button:hover {
@@ -693,8 +695,25 @@ body.light .cancel-btn:hover {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    body {
+            font-size: 14px;
+        }
+
+    main {
+        flex-grow: 1;
+        padding: 0.75rem 0.75rem 1rem 0.75rem;
+        margin-top: 64px; /* или высота header */
+        margin-bottom: 90px; /* или высота input */
+        width: 100%;
+        overflow-y: auto;
+    }
+
+    header h1 {
+        font-size: 1.2rem;
+    }
+
     .sidebar {
-        transform: translateX(-100%); /* Hidden by default on mobile */
+        transform: translateX(-100%);
     }
 
     .sidebar.hidden {
@@ -707,11 +726,22 @@ body.light .cancel-btn:hover {
 
     .chat-container {
         margin-left: 0;
+        width: 100%;
     }
 
     .input-container {
-        left: 0;
+        position: fixed;
+        bottom: 0;
+        left: 0 !important;
+        right: 0;
         width: 100%;
+        padding: 10px 12px;
+    }
+
+    .input-container input {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+        border-radius: 25px;
     }
 
     /* Ensure sidebar buttons are visible */
@@ -727,5 +757,44 @@ body.light .cancel-btn:hover {
 
     .sidebar-head button {
         margin-bottom: 18px;
+    }
+
+    .input-actions {
+        display: flex;
+        gap: 8px;
+    }
+        .input-actions button {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+        border-radius: 50%;
+    }
+
+    .message {
+        max-width: 100%;
+        width: fit-content;
+        word-break: break-word;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
+
+    .messages {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+
+
+}
+
+@media (max-width: 480px) {
+    .message {
+        max-width: 90%;
+    }
+    .input-container {
+        padding: 10px 15px;
     }
 }

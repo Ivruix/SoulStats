@@ -19,7 +19,7 @@ def create_jwt_token(user_id, username, chat_id=0):
         "user_id": user_id,
         "username": username,
         "chat_id": chat_id,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)  # Токен действителен 24 часа
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Токен действителен 1 час
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
