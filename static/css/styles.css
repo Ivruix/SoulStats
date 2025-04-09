@@ -702,8 +702,7 @@ body.light .cancel-btn:hover {
     main {
         flex-grow: 1;
         padding: 0.75rem 0.75rem 1rem 0.75rem;
-        margin-top: 64px; /* или высота header */
-        margin-bottom: 90px; /* или высота input */
+        margin-bottom: 70px;
         width: 100%;
         overflow-y: auto;
     }

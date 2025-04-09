@@ -117,6 +117,17 @@ function initializeDashboard(token, userId, chatId) {
 
     window.switchChat = function(chatId) {
         currentChatId = chatId;
+
+        if (window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('hidden');
+
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const hamburgerHeadBtn = document.getElementById('hamburger-head-btn');
+            if (hamburgerBtn) hamburgerBtn.textContent = '☰';
+            if (hamburgerHeadBtn) hamburgerHeadBtn.textContent = '☰';
+        }
+
         document.querySelectorAll('.chat-item').forEach(item => {
             item.classList.remove('active');
             if (parseInt(item.getAttribute('onclick').match(/\d+/)[0]) === chatId) {
