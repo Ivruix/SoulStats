@@ -515,6 +515,148 @@ function initializeProfile(token) {
     document.getElementById('add-fact-btn').addEventListener('click', addFact);
 }
 
+function drawEmotionFrequencyChart(period = 'all') {
+    console.log('drawEmotionFrequencyChart called with period:', period);
+    const token = localStorage.getItem("token");
+
+    fetch(`/get_emotions_by_period?period=${period}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сети');
+        return response.json();
+    })
+    .then(data => {
+        // Основной trace: квадратики
+        const mainTrace = {
+            x: data.weeks,
+            y: data.days,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: window.innerWidth < 480 ? 10 : 18,
+                color: data.colors,
+                symbol: 'square',
+                line: { width: 1, color: '#fff' }
+            },
+            text: data.emotions,
+            hovertemplate:
+                'Неделя: %{x}<br>' +
+                'День: %{y}<br>' +
+                'Эмоция: %{text}<extra></extra>',
+            showlegend: false
+        };
+
+        // Генерация уникальных эмоций и цветов для легенды
+        const legendMap = {};
+        for (let i = 0; i < data.emotions.length; i++) {
+            const emotion = data.emotions[i];
+            const color = data.colors[i];
+            if (!(emotion in legendMap)) {
+                legendMap[emotion] = color;
+            }
+        }
+
+        const legendTraces = Object.entries(legendMap).map(([emotion, color]) => ({
+            x: [null], y: [null],  // невидимая точка
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: color,
+                symbol: 'square'
+            },
+            name: emotion,
+            showlegend: true,
+            hoverinfo: 'none'
+        }));
+
+        const layout = {
+            title: { text: 'Частота эмоций по периодам', font: { color: '#a0a0c0' } },
+            xaxis: {
+                title: 'Неделя',
+                color: '#a0a0c0',
+                dtick: 1,
+                showgrid: false
+            },
+            yaxis: {
+                type: 'category',
+                categoryorder: 'array',
+                categoryarray: [
+                    'Понедельник', 'Вторник', 'Среда',
+                    'Четверг', 'Пятница', 'Суббота', 'Воскресенье'
+                ],
+                color: '#a0a0c0',
+                showgrid: false
+            },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            legend: {
+                orientation: 'h',
+                x: 0,
+                y: -0.3,
+                font: { color: '#a0a0c0' }
+            }
+        };
+
+        const config = {
+            staticPlot: true,
+            displayModeBar: false,
+            responsive: true
+        };
+
+        Plotly.newPlot('emotion-period-chart', [mainTrace, ...legendTraces], layout, config);
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке графика эмоций:', error);
+    });
+}
+
+function drawHappinessByPeriod(period = 'all') {
+    const token = localStorage.getItem("token");
+
+    fetch(`/get_happiness_by_period?period=${period}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сети');
+        return response.json();
+    })
+    .then(data => {
+        const trace = {
+            x: data.dates,
+            y: data.levels,
+            mode: 'lines+markers',
+            line: { color: 'white', shape: 'spline' },
+            marker: {
+                size: 12,
+                symbol: 'circle',
+                color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red')
+            },
+            text: data.emojis,
+            hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
+        };
+
+        const config = {
+            staticPlot: true,
+            displayModeBar: false,
+            responsive: true
+        };
+
+        Plotly.newPlot('happiness-period-chart', [trace], {
+            title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
+            xaxis: { title: 'Период', color: '#a0a0c0' },
+            yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent'
+        }, config);
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке данных по периодам:', error);
+    });
+}
+
+
 // Stats Functions
 function initializeStats(token) {
     if (token) {
@@ -612,6 +754,8 @@ function initializeStats(token) {
     script.onload = function() {
         console.log('Plotly.js загружен');
         drawHappinessCharts();
+        drawHappinessByPeriod();
+        drawEmotionFrequencyChart();
     };
     script.onerror = function() {
         console.error('Ошибка загрузки Plotly.js');
@@ -740,3 +884,10 @@ window.onload = function() {
         hamburgerHeadBtn.addEventListener('click', toggleSidebar);
     }
 };
+
+window.addEventListener('resize', () => {
+    Plotly.Plots.resize(document.getElementById('emotion-period-chart'));
+    Plotly.Plots.resize(document.getElementById('happiness-period-chart'));
+    Plotly.Plots.resize(document.getElementById('happiness-day-chart'));
+    Plotly.Plots.resize(document.getElementById('happiness-emotion-chart'));
+});

@@ -406,13 +406,13 @@ def get_happiness_by_day_of_week():
         days = [row[0] for row in data]  # День недели
         levels = [row[1] for row in data]  # Средний уровень счастья
         days_map = {
-            "Monday": "Понедельник",
-            "Tuesday": "Вторник",
-            "Wednesday": "Среда",
-            "Thursday": "Четверг",
-            "Friday": "Пятница",
-            "Saturday": "Суббота",
-            "Sunday": "Воскресенье"
+            "Monday": "Пн.",
+            "Tuesday": "Вт.",
+            "Wednesday": "Ср.",
+            "Thursday": "Чт.",
+            "Friday": "Пт.",
+            "Saturday": "Сб.",
+            "Sunday": "Вс."
         }
         days = [days_map.get(day.strip(), day.strip()) for day in days]  # Переводим дни недели на русский
 
@@ -474,31 +474,65 @@ def get_emotions_by_period():
         data = Stats.get_emotions_by_period(user_id, period)
         if not data:
             return jsonify({
-                'dates': [],
+                'weeks': [],
+                'days': [],
                 'emotions': [],
                 'colors': []
             })
 
-        dates = [row[0].strftime('%Y-%m-%d') for row in data]
-        emotions = [row[1] for row in data]
+        weeks = []
+        days = []
+        emotions = []
+        colors = []
+
+        day_map = {
+            0: 'Пн.',
+            1: 'Вт.',
+            2: 'Ср.',
+            3: 'Чт.',
+            4: 'Пт.',
+            5: 'Сб.',
+            6: 'Вс.'
+        }
 
         # Цветовая схема для разных эмоций
         color_map = {
-            'радость': '#4CAF50',  # зеленый
-            'грусть': '#2196F3',  # синий
-            'гнев': '#F44336',  # красный
-            'тревога': '#9C27B0',  # фиолетовый
-            'разочарование': '#607D8B',  # серо-синий
-            'надежда': '#FFC107',  # желтый
-            'удивление': '#FF9800',  # оранжевый
-            'нейтральное': '#9E9E9E',  # серый
-            'неизвестное': '#616161'  # темно-серый
+            'радость': '#4CAF50',
+            'грусть': '#2196F3',
+            'гнев': '#F44336',
+            'тревога': '#9C27B0',
+            'разочарование': '#607D8B',
+            'надежда': '#FFC107',
+            'удивление': '#FF9800',
+            'нейтральное': '#9E9E9E',
+            'неизвестное': '#616161'
         }
+        #
+        # color_map = {
+        #     'joy': '#4CAF50',  # green
+        #     'sadness': '#2196F3',  # blue
+        #     'anger': '#F44336',  # red
+        #     'anxiety': '#9C27B0',  # purple
+        #     'disappointment': '#607D8B',  # blue-gray
+        #     'hope': '#FFC107',  # yellow
+        #     'surprise': '#FF9800',  # orange
+        #     'neutral': '#9E9E9E',  # gray
+        #     'unknown': '#616161'  # dark gray
+        # }
 
-        colors = [color_map.get(emotion.lower(), '#607D8B') for emotion in emotions]  # серый по умолчанию
+        for created_at, emotion in data:
+            week_number = created_at.isocalendar()[1]
+            weekday_number = created_at.weekday()  # Понедельник = 0
+            day_name = day_map.get(weekday_number, str(weekday_number))
+
+            weeks.append(week_number)
+            days.append(day_name)
+            emotions.append(emotion)
+            colors.append(color_map.get(emotion.lower(), '#607D8B'))
 
         return jsonify({
-            'dates': dates,
+            'weeks': weeks,
+            'days': days,
             'emotions': emotions,
             'colors': colors
         })

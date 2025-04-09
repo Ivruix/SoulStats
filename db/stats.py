@@ -93,6 +93,7 @@ class Stats:
         conn = get_connection()
         cur = conn.cursor()
 
+        print(period)
         if period == 'week':
             query = """
                 SELECT c.created_at, me.val
