@@ -1,6 +1,6 @@
 # <img src="https://i.ibb.co/bj2TPM92/logo.png" width="32"/> SoulStats - умный дневник
 
-Доступен здесь: https://soulstats.ru
+Доступен по адресу: https://soulstats.ru
 
 ## Краткое описание
 
