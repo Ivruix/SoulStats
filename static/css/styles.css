@@ -702,7 +702,6 @@ body.light .cancel-btn:hover {
     main {
         flex-grow: 1;
         padding: 0.75rem 0.75rem 1rem 0.75rem;
-        margin-bottom: 70px;
         width: 100%;
         overflow-y: auto;
     }

@@ -264,6 +264,19 @@ function initializeDashboard(token, userId, chatId) {
     } else {
     sidebar.classList.add('hidden');}
     });
+
+    function adjustMainPadding() {
+    const inputContainer = document.getElementById('input-container');
+    const main = document.querySelector('main');
+    if (inputContainer && main) {
+        const height = inputContainer.offsetHeight;
+        main.style.paddingBottom = `${height + 50}px`;
+        }
+    }
+
+    // Вызов при загрузке и изменении размера окна
+    window.addEventListener('load', adjustMainPadding);
+    window.addEventListener('resize', adjustMainPadding);
 }
 
 // Profile Functions
