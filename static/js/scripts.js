@@ -65,6 +65,22 @@ function initializeDashboard(token, userId, chatId) {
         hamburgerHeadBtn.textContent = sidebar.classList.contains('hidden') ? '☰' : '✖';
     };
 
+function adjustMainPadding() {
+    const inputContainer = document.getElementById('input-container');
+    const main = document.querySelector('main');
+    const sidebarButtons = document.querySelector('.header-buttons');
+
+    if (inputContainer && main) {
+        const height = inputContainer.offsetHeight;
+        main.style.paddingBottom = `${height + 20}px`;
+    }
+
+    if (sidebarButtons) {
+        const height = inputContainer.offsetHeight;
+        sidebarButtons.style.paddingBottom = `${height + 10}px`;
+    }
+}
+
     function checkMessageLimit(chatId) {
         fetch(`/get-messages/${chatId}`, {
             method: 'GET',
@@ -126,6 +142,8 @@ function initializeDashboard(token, userId, chatId) {
             const hamburgerHeadBtn = document.getElementById('hamburger-head-btn');
             if (hamburgerBtn) hamburgerBtn.textContent = '☰';
             if (hamburgerHeadBtn) hamburgerHeadBtn.textContent = '☰';
+
+            adjustMainPadding();
         }
 
         document.querySelectorAll('.chat-item').forEach(item => {
@@ -265,14 +283,7 @@ function initializeDashboard(token, userId, chatId) {
     sidebar.classList.add('hidden');}
     });
 
-    function adjustMainPadding() {
-    const inputContainer = document.getElementById('input-container');
-    const main = document.querySelector('main');
-    if (inputContainer && main) {
-        const height = inputContainer.offsetHeight;
-        main.style.paddingBottom = `${height + 50}px`;
-        }
-    }
+
 
     // Вызов при загрузке и изменении размера окна
     window.addEventListener('load', adjustMainPadding);

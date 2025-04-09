@@ -88,6 +88,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 header {
@@ -711,6 +713,9 @@ body.light .cancel-btn:hover {
     }
 
     .sidebar {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         transform: translateX(-100%);
     }
 
