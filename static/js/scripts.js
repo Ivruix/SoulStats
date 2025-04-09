@@ -72,7 +72,7 @@ function adjustMainPadding() {
 
     if (inputContainer && main) {
         const height = inputContainer.offsetHeight;
-        main.style.paddingBottom = `${height + 20}px`;
+        main.style.paddingBottom = `${height + 40}px`;
     }
 
     if (sidebarButtons) {
