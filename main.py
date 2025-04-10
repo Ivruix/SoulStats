@@ -496,29 +496,29 @@ def get_emotions_by_period():
         }
 
         # Цветовая схема для разных эмоций
-        color_map = {
-            'радость': '#4CAF50',
-            'грусть': '#2196F3',
-            'гнев': '#F44336',
-            'тревога': '#9C27B0',
-            'разочарование': '#607D8B',
-            'надежда': '#FFC107',
-            'удивление': '#FF9800',
-            'нейтральное': '#9E9E9E',
-            'неизвестное': '#616161'
-        }
-        #
         # color_map = {
-        #     'joy': '#4CAF50',  # green
-        #     'sadness': '#2196F3',  # blue
-        #     'anger': '#F44336',  # red
-        #     'anxiety': '#9C27B0',  # purple
-        #     'disappointment': '#607D8B',  # blue-gray
-        #     'hope': '#FFC107',  # yellow
-        #     'surprise': '#FF9800',  # orange
-        #     'neutral': '#9E9E9E',  # gray
-        #     'unknown': '#616161'  # dark gray
+        #     'радость': '#4CAF50',
+        #     'грусть': '#2196F3',
+        #     'гнев': '#F44336',
+        #     'тревога': '#9C27B0',
+        #     'разочарование': '#607D8B',
+        #     'надежда': '#FFC107',
+        #     'удивление': '#FF9800',
+        #     'нейтральное': '#9E9E9E',
+        #     'неизвестное': '#616161'
         # }
+
+        color_map = {
+            'joy': '#4CAF50',  # green
+            'sadness': '#2196F3',  # blue
+            'anger': '#F44336',  # red
+            'anxiety': '#9C27B0',  # purple
+            'disappointment': '#607D8B',  # blue-gray
+            'hope': '#FFC107',  # yellow
+            'surprise': '#FF9800',  # orange
+            'neutral': '#9E9E9E',  # gray
+            'unknown': '#616161'  # dark gray
+        }
 
         for created_at, emotion in data:
             week_number = created_at.isocalendar()[1]
