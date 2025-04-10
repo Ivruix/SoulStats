@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, render_template_string
 from flask_mail import Mail
+from flask_mail import Message as FlaskMessage
 
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
@@ -625,18 +626,7 @@ def end_old_chats():
     print(f"Ended {ended} old chats.")
 
 
-def start_blocking_scheduler():
-    end_old_chats()
-
-    scheduler = BlockingScheduler()
-    scheduler.add_job(notify_users_about_updated_chats, 'cron', hour=1)
-    scheduler.add_job(end_old_chats, 'interval', hours=1)
-    scheduler.start()
-
 def send_reminder_email(user_id, username, email):
-    from flask_mail import Message
-    from flask import render_template_string
-
     with app.app_context():
         link = f"https://soulstats.ru/dashboard?token={create_jwt_token(user_id, username)}"
 
@@ -645,14 +635,12 @@ def send_reminder_email(user_id, username, email):
 
         html_body = render_template_string(html_template, username=username, url=link)
 
-        msg = Message(subject="Обновление в SoulStats 💬", recipients=[email])
+        msg = FlaskMessage(subject="Обновление в SoulStats 💬", recipients=[email])
         msg.html = html_body
         mail.send(msg)
 
-def send_reset_password_email(user_id, username, email):
-    from flask_mail import Message
-    from flask import render_template_string
 
+def send_reset_password_email(user_id, username, email):
     with app.app_context():
         token = jwt.encode({
             'user_id': user_id,
@@ -667,24 +655,35 @@ def send_reset_password_email(user_id, username, email):
 
         html_body = render_template_string(html_template, username=username, url=reset_link)
 
-        msg = Message(subject="Восстановление пароля — SoulStats", recipients=[email])
+        msg = FlaskMessage(subject="Восстановление пароля — SoulStats", recipients=[email])
         msg.html = html_body
         mail.send(msg)
 
 
-def notify_users_about_updated_chats():
+def remind_users():
     users = UserData.get_all_users()
     for user_id, username, email in users:
         latest = Chat.get_latest_chat(user_id)
 
-        if not latest or latest[1] != date.today():
+        if not latest or latest[1] != datetime.date.today():
             send_reminder_email(user_id, username, email)
 
+
+# Запуск фонового планировщика (для тестового использования)
 def start_background_scheduler():
     end_old_chats()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(notify_users_about_updated_chats, 'cron', hour=1)
+    scheduler.add_job(end_old_chats, 'interval', hours=1)
+    scheduler.start()
+
+
+# Запуск блокирующего планировщика (для продакшн использования)
+def start_blocking_scheduler():
+    end_old_chats()
+
+    scheduler = BlockingScheduler()
+    scheduler.add_job(remind_users, 'cron', hour=21)
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 
