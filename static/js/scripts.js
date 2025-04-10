@@ -527,19 +527,37 @@ function drawHappinessByEmotionChart() {
     })
     .then(data => {
         const colorMap = {
-            'joy': '#4CAF50',
-            'sadness': '#2196F3',
-            'anger': '#F44336',
-            'anxiety': '#9C27B0',
-            'disappointment': '#607D8B',
-            'hope': '#FFC107',
-            'surprise': '#FF9800',
-            'neutral': '#9E9E9E',
-            'unknown': '#616161'
+            joy: '#4CAF50',
+            sadness: '#2196F3',
+            anger: '#F44336',
+            anxiety: '#9C27B0',
+            disappointment: '#607D8B',
+            hope: '#FFC107',
+            surprise: '#FF9800',
+            neutral: '#9E9E9E',
+            unknown: '#616161',
+            fear: '#4E3184'
         };
 
+        const emotionNameMap = {
+            joy: 'Радость',
+            sadness: 'Грусть',
+            anger: 'Гнев',
+            anxiety: 'Тревога',
+            disappointment: 'Разочарование',
+            hope: 'Надежда',
+            surprise: 'Удивление',
+            neutral: 'Нейтрально',
+            unknown: 'Неизвестно',
+            fear: 'Страх'
+        };
+
+        const translatedEmotions = data.emotions.map(
+            emotion => emotionNameMap[emotion.toLowerCase()] || emotion
+        );
+
         const trace = {
-            x: data.emotions,
+            x: translatedEmotions,
             y: data.levels,
             type: 'bar',
             marker: {
@@ -547,8 +565,8 @@ function drawHappinessByEmotionChart() {
                     colorMap[emotion.toLowerCase()] || '#607D8B'
                 )
             },
-            text: data.levels.map((level, i) =>
-                `${data.counts[i]} записей`
+            text: data.levels.map((_, i) =>
+                `Кол-во записей: ${data.counts[i]}`
             ),
             textposition: 'auto',
             hovertemplate:
@@ -558,9 +576,9 @@ function drawHappinessByEmotionChart() {
         };
 
         const layout = {
-            title: { text: 'Средний уровень счастья по эмоциям', font: { color: '#a0a0c0' } },
+            title: { text: 'Средний уровень настроения по эмоциям', font: { color: '#a0a0c0' } },
             xaxis: { title: 'Эмоция', color: '#a0a0c0' },
-            yaxis: { title: 'Средний уровень счастья', color: '#a0a0c0' },
+            yaxis: { title: 'Средний уровень настроения', color: '#a0a0c0' },
             paper_bgcolor: 'transparent',
             plot_bgcolor: 'transparent'
         };
@@ -575,6 +593,7 @@ function drawHappinessByEmotionChart() {
 }
 
 
+
 function drawEmotionFrequencyChart(period = 'all') {
     console.log('drawEmotionFrequencyChart called with period:', period);
     const token = localStorage.getItem("token");
@@ -587,6 +606,23 @@ function drawEmotionFrequencyChart(period = 'all') {
         return response.json();
     })
     .then(data => {
+        const emotionNameMap = {
+            joy: 'Радость',
+            sadness: 'Грусть',
+            anger: 'Гнев',
+            anxiety: 'Тревога',
+            disappointment: 'Разочарование',
+            hope: 'Надежда',
+            surprise: 'Удивление',
+            neutral: 'Нейтрально',
+            unknown: 'Неизвестно',
+            fear: 'Страх'
+        };
+
+        const translatedEmotions = data.emotions.map(
+            emotion => emotionNameMap[emotion.toLowerCase()] || emotion
+        );
+
         // Основной trace: квадратики
         const mainTrace = {
             x: data.weeks,
@@ -599,7 +635,7 @@ function drawEmotionFrequencyChart(period = 'all') {
                 symbol: 'square',
                 line: { width: 1, color: '#fff' }
             },
-            text: data.emotions,
+            text: translatedEmotions,
             hovertemplate:
                 'Неделя: %{x}<br>' +
                 'День: %{y}<br>' +
@@ -626,7 +662,7 @@ function drawEmotionFrequencyChart(period = 'all') {
                 color: color,
                 symbol: 'square'
             },
-            name: emotion,
+            name: emotionNameMap[emotion.toLowerCase()] || emotion,
             showlegend: true,
             hoverinfo: 'none'
         }));
