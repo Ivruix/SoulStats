@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-height: 60px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .button-wrapper {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4a90e2;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://i.ibb.co/xLNfGkG/soulstats-logo.png" alt="SoulStats Logo">
+        </div>
+        <div class="content">
+            <p>Привет, {{ username }}!</p>
+            <p>Ваш дневник обновился 📊</p>
+            <p>Загляни, чтобы увидеть новые данные, графики и рекомендации по улучшению настроения.</p>
+            <div class="button-wrapper">
+                <a class="button" href="{{ url }}">Открыть SoulStats</a>
+            </div>
+        </div>
+        <div class="footer">
+            С любовью,<br>Команда SoulStats ❤️
+        </div>
+    </div>
+</body>
+</html>

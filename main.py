@@ -1,11 +1,11 @@
 import os
-from datetime import datetime
+import datetime
 import bcrypt
+import jwt
 from apscheduler.schedulers.blocking import BlockingScheduler
 from dotenv import load_dotenv
-from datetime import date
 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, render_template_string
 from flask_mail import Mail
 
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
@@ -33,16 +33,32 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Получение ключа для почты и саму почту
+MAIL_PASS = os.getenv("MAIL_PASSWORD")
+MAIL = os.getenv("MAIL_USERNAME")
+
 # Настройки для почты
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'thegoomba4@gmail.com'  # Укажите почту
-app.config['MAIL_PASSWORD'] = 'test!'  # Укажите пароль от почты
+app.config['MAIL_USERNAME'] = MAIL
+app.config['MAIL_PASSWORD'] = MAIL_PASS
+app.config['MAIL_DEFAULT_SENDER'] = 'thegoomba4@gmail.com'
 mail = Mail(app)
+
+# Шаблон письма для ежедневного напоминания
+with open("templates/email_reminder_template.html", encoding="utf-8") as f:
+    html_template = f.read()
 
 MAX_PAID_GPT_MESSAGES = 10
 
+@app.route('/test_email')
+def test_email():
+    from flask_mail import Message
+    msg = Message("Привет от SoulStats!", recipients=["kav.max007@gmail.com"])
+    msg.body = "Это тестовое письмо. Всё настроено правильно :)"
+    mail.send(msg)
+    return "Письмо отправлено!"
 
 @app.route('/')
 def landing_page():
@@ -125,23 +141,43 @@ def register():
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
+        user = UserData.get_user_by_email(email)
 
-        # TODO: Реализовать сброс пароля
-        # if email in USERS:
-        #     # Отправка письма с ссылкой для сброса пароля
-        #     reset_link = url_for('reset_password', _external=True)
-        #     msg = Message(
-        #         "Восстановление пароля - Умный дневник",
-        #         sender='your_email@gmail.com',
-        #         recipients=[email]
-        #     )
-        #     msg.body = f"Здравствуйте!\n\nДля сброса пароля перейдите по ссылке:\n{reset_link}"
-        #     mail.send(msg)
-        #     flash("Ссылка для восстановления пароля отправлена на ваш email.", "info")
-        # else:
-        #     flash("Пользователь с таким email не найден.", "danger")
+        if user:
+            user_id, username = user
+            send_reset_password_email(user_id, username, email)
+            flash("Ссылка для восстановления пароля отправлена на ваш email.", "info")
+        else:
+            flash("Пользователь с таким email не найден.", "danger")
 
     return render_template('forgot_password.html')
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+        user_id = payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return "Срок действия ссылки истёк"
+    except jwt.InvalidTokenError:
+        return "Недействительная ссылка"
+
+    if request.method == 'POST':
+        password = request.form['password']
+        confirm = request.form['confirm_password']
+
+        if password != confirm:
+            flash("Пароли не совпадают.", "danger")
+            return render_template('reset_password.html', token=token)
+
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        UserData.update_password(user_id, hashed)
+        flash("Пароль успешно обновлён. Войдите с новым паролем.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html', token=token)
+
 
 
 @app.route('/dashboard')
@@ -240,7 +276,7 @@ def send_message():
     if new_message == "Давайте завершим этот диалог.":
         last_message = True
 
-    # Если чат завершен, анализируем его и помечаем как завершенный
+    # Если чат завершен, анализируем его и помечаемtoкак завершенный
     if last_message:
         analyze_chat(chat_id, user_id)
         Chat.mark_chat_as_ended(chat_id)
@@ -578,7 +614,7 @@ def logout():
 
 def end_old_chats():
     print("Ending old chats...")
-    current_date = date.today()
+    current_date = datetime.date.today()
     active_chats = Chat.get_active_chats()
     ended = 0
     for chat_id, user_id, created_at in active_chats:
@@ -593,14 +629,62 @@ def start_blocking_scheduler():
     end_old_chats()
 
     scheduler = BlockingScheduler()
+    scheduler.add_job(notify_users_about_updated_chats, 'cron', hour=1)
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 
+def send_reminder_email(user_id, username, email):
+    from flask_mail import Message
+    from flask import render_template_string
+
+    with app.app_context():
+        link = f"https://soulstats.ru/dashboard?token={create_jwt_token(user_id, username)}"
+
+        with open("templates/email_reminder_template.html", encoding="utf-8") as f:
+            html_template = f.read()
+
+        html_body = render_template_string(html_template, username=username, url=link)
+
+        msg = Message(subject="Обновление в SoulStats 💬", recipients=[email])
+        msg.html = html_body
+        mail.send(msg)
+
+def send_reset_password_email(user_id, username, email):
+    from flask_mail import Message
+    from flask import render_template_string
+
+    with app.app_context():
+        token = jwt.encode({
+            'user_id': user_id,
+            'username': username,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }, os.getenv('JWT_SECRET'), algorithm="HS256")
+
+        reset_link = url_for('reset_password', token=token, _external=True)
+
+        with open("templates/password_reset_email.html", encoding="utf-8") as f:
+            html_template = f.read()
+
+        html_body = render_template_string(html_template, username=username, url=reset_link)
+
+        msg = Message(subject="Восстановление пароля — SoulStats", recipients=[email])
+        msg.html = html_body
+        mail.send(msg)
+
+
+def notify_users_about_updated_chats():
+    users = UserData.get_all_users()
+    for user_id, username, email in users:
+        latest = Chat.get_latest_chat(user_id)
+
+        if not latest or latest[1] != date.today():
+            send_reminder_email(user_id, username, email)
 
 def start_background_scheduler():
     end_old_chats()
 
     scheduler = BackgroundScheduler()
+    scheduler.add_job(notify_users_about_updated_chats, 'cron', hour=1)
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 

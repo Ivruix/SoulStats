@@ -51,3 +51,35 @@ class UserData:
         cur.close()
         conn.close()
         return existing_user is not None
+
+    @staticmethod
+    def get_all_users():
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT user_id, username, email
+            FROM user_data
+        """)
+        users = cur.fetchall()
+        cur.close()
+        conn.close()
+        return users
+
+    @staticmethod
+    def get_user_by_email(email):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT user_id, username FROM user_data WHERE email = %s LIMIT 1", (email,))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+        return user
+
+    @staticmethod
+    def update_password(user_id, new_password_hash):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE user_data SET password_hash = %s WHERE user_id = %s", (new_password_hash, user_id))
+        conn.commit()
+        cur.close()
+        conn.close()

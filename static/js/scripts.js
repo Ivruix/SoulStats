@@ -796,8 +796,8 @@ function initializeStats(token) {
 
             Plotly.newPlot('happiness-period-chart', [periodTrace], {
                 title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
-                xaxis: { title: 'Период', color: '#a0a0c0' },
-                yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
+                xaxis: { title: 'Период', color: '#a0a0c0', showgrid: false },
+                yaxis: { title: 'Уровень счастья', color: '#a0a0c0', showgrid: false },
                 paper_bgcolor: 'transparent',
                 plot_bgcolor: 'transparent'
             });

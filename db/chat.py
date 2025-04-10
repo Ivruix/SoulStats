@@ -78,3 +78,22 @@ class Chat:
         cur.close()
         conn.close()
         return active_chats
+
+    @staticmethod
+    def get_latest_chat(user_id):
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT chat_id, created_at
+            FROM chat
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (user_id,))
+        result = cur.fetchone()
+
+        cur.close()
+        conn.close()
+        return result
+
