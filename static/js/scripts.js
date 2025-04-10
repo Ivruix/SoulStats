@@ -515,6 +515,66 @@ function initializeProfile(token) {
     document.getElementById('add-fact-btn').addEventListener('click', addFact);
 }
 
+function drawHappinessByEmotionChart() {
+    const token = localStorage.getItem("token");
+
+    fetch('/get_happiness_by_emotion', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сети');
+        return response.json();
+    })
+    .then(data => {
+        const colorMap = {
+            'joy': '#4CAF50',
+            'sadness': '#2196F3',
+            'anger': '#F44336',
+            'anxiety': '#9C27B0',
+            'disappointment': '#607D8B',
+            'hope': '#FFC107',
+            'surprise': '#FF9800',
+            'neutral': '#9E9E9E',
+            'unknown': '#616161'
+        };
+
+        const trace = {
+            x: data.emotions,
+            y: data.levels,
+            type: 'bar',
+            marker: {
+                color: data.emotions.map(emotion =>
+                    colorMap[emotion.toLowerCase()] || '#607D8B'
+                )
+            },
+            text: data.levels.map((level, i) =>
+                `${data.counts[i]} записей`
+            ),
+            textposition: 'auto',
+            hovertemplate:
+                'Эмоция: %{x}<br>' +
+                'Средний уровень: %{y}<br>' +
+                '%{text}<extra></extra>'
+        };
+
+        const layout = {
+            title: { text: 'Средний уровень счастья по эмоциям', font: { color: '#a0a0c0' } },
+            xaxis: { title: 'Эмоция', color: '#a0a0c0' },
+            yaxis: { title: 'Средний уровень счастья', color: '#a0a0c0' },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent'
+        };
+
+        Plotly.newPlot('happiness-emotion-chart', [trace], layout, {
+            responsive: true
+        });
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке данных по эмоциям:', error);
+    });
+}
+
+
 function drawEmotionFrequencyChart(period = 'all') {
     console.log('drawEmotionFrequencyChart called with period:', period);
     const token = localStorage.getItem("token");
@@ -558,7 +618,7 @@ function drawEmotionFrequencyChart(period = 'all') {
         }
 
         const legendTraces = Object.entries(legendMap).map(([emotion, color]) => ({
-            x: [null], y: [null],  // невидимая точка
+            x: [null], y: [null],
             mode: 'markers',
             type: 'scatter',
             marker: {
@@ -627,9 +687,9 @@ function drawHappinessByPeriod(period = 'all') {
             mode: 'lines+markers',
             line: { color: 'white', shape: 'spline' },
             marker: {
-                size: 12,
+                size: 8,
                 symbol: 'circle',
-                color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red')
+                color: data.levels.map(level => level >= 4 ? '#4CAF50' : level >= 3 ? '#FF9800' : '#F44336')
             },
             text: data.emojis,
             hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
@@ -692,7 +752,7 @@ function initializeStats(token) {
                 marker: {
                     size: 12,
                     symbol: 'circle',
-                    color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red')
+                    color: data.levels.map(level => level >= 4 ? '#4CAF50' : level >= 3 ? '#FF9800' : '#F44336')
                 },
                 text: data.emojis,
                 hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
@@ -725,7 +785,7 @@ function initializeStats(token) {
                 y: data.levels,
                 type: 'bar',
                 marker: {
-                    color: data.levels.map(level => level >= 4 ? 'green' : level >= 3 ? 'yellow' : 'red'),
+                    color: data.levels.map(level => level >= 4 ? '#4CAF50' : level >= 3 ? '#FF9800' : '#F44336'),
                     line: { width: 1, color: 'rgba(0, 0, 0, 0.1)' }
                 },
                 text: data.emojis,
@@ -754,6 +814,7 @@ function initializeStats(token) {
         drawHappinessCharts();
         drawHappinessByPeriod();
         drawEmotionFrequencyChart();
+        drawHappinessByEmotionChart();
     };
     script.onerror = function() {
         console.error('Ошибка загрузки Plotly.js');
