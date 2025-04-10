@@ -582,10 +582,8 @@ function drawEmotionFrequencyChart(period = 'all') {
             yaxis: {
                 type: 'category',
                 categoryorder: 'array',
-                categoryarray: [
-                    'Понедельник', 'Вторник', 'Среда',
-                    'Четверг', 'Пятница', 'Суббота', 'Воскресенье'
-                ],
+                categoryarray: ['Пн.', 'Вт.', 'Ср.', 'Чт.', 'Пт.', 'Сб.', 'Вс.'],
+                autorange: 'reversed',
                 color: '#a0a0c0',
                 showgrid: false
             },
