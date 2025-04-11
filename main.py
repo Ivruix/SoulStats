@@ -2,7 +2,7 @@ import os
 import datetime
 import bcrypt
 import jwt
-from apscheduler.schedulers.blocking import BlockingScheduler
+
 from dotenv import load_dotenv
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, render_template_string
@@ -20,6 +20,7 @@ from db.fact import Fact
 from db.chat import Chat
 from db.stats import Stats
 
+from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
