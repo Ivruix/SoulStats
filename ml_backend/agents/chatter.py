@@ -6,7 +6,7 @@ from ml_backend.data_types.agent_chat import AgentChat
 
 
 class Chatter:
-    def __init__(self, temperature=0.2):
+    def __init__(self, temperature=0.5):
         sdk = get_sdk()
         chatter_model = sdk.models.completions("yandexgpt")
         chatter_model = chatter_model.configure(temperature=temperature)
