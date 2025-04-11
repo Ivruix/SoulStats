@@ -1,4 +1,4 @@
-from main import start_blocking_scheduler
+from main import start_production_scheduler
 
 if __name__ == "__main__":
-    start_blocking_scheduler()
+    start_production_scheduler()

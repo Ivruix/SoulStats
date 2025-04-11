@@ -53,6 +53,7 @@ with open("templates/email_reminder_template.html", encoding="utf-8") as f:
 
 MAX_PAID_GPT_MESSAGES = 10
 
+
 @app.route('/test_email')
 def test_email():
     from flask_mail import Message
@@ -60,6 +61,7 @@ def test_email():
     msg.body = "Это тестовое письмо. Всё настроено правильно :)"
     mail.send(msg)
     return "Письмо отправлено!"
+
 
 @app.route('/')
 def landing_page():
@@ -180,7 +182,6 @@ def reset_password(token):
     return render_template('reset_password.html', token=token)
 
 
-
 @app.route('/dashboard')
 def dashboard():
     # Получаем токен из query-параметра (если он есть)
@@ -277,7 +278,7 @@ def send_message():
     if new_message == "Давайте завершим этот диалог.":
         last_message = True
 
-    # Если чат завершен, анализируем его и помечаемtoкак завершенный
+    # Если чат завершен, анализируем его и помечаем как завершенный
     if last_message:
         analyze_chat(chat_id, user_id)
         Chat.mark_chat_as_ended(chat_id)
@@ -540,7 +541,7 @@ def get_emotions_by_period():
             'disappointment': '#607D8B',  # blue-gray
             'hope': '#FFC107',  # yellow
             'surprise': '#FF9800',  # orange
-            'fear': '#844D9E', # purple
+            'fear': '#844D9E',  # purple
             'neutral': '#9E9E9E',  # gray
             'unknown': '#616161',  # dark gray
         }
@@ -577,7 +578,7 @@ def transcribe_voice():
 
     user_id = request.user_id
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     parts = voice_file.filename.rsplit('.', 1)
     if len(parts) == 2:
         ext = parts[1]
@@ -630,10 +631,10 @@ def send_reminder_email(user_id, username, email):
     with app.app_context():
         link = f"https://soulstats.ru/dashboard?token={create_jwt_token(user_id, username)}"
 
-        with open("templates/email_reminder_template.html", encoding="utf-8") as f:
-            html_template = f.read()
+        with open("templates/email_reminder_template.html", encoding="utf-8") as template_file:
+            template = template_file.read()
 
-        html_body = render_template_string(html_template, username=username, url=link)
+        html_body = render_template_string(template, username=username, url=link)
 
         msg = FlaskMessage(subject="Обновление в SoulStats 💬", recipients=[email])
         msg.html = html_body
@@ -650,10 +651,10 @@ def send_reset_password_email(user_id, username, email):
 
         reset_link = url_for('reset_password', token=token, _external=True)
 
-        with open("templates/password_reset_email.html", encoding="utf-8") as f:
-            html_template = f.read()
+        with open("templates/password_reset_email.html", encoding="utf-8") as template_file:
+            template = template_file.read()
 
-        html_body = render_template_string(html_template, username=username, url=reset_link)
+        html_body = render_template_string(template, username=username, url=reset_link)
 
         msg = FlaskMessage(subject="Восстановление пароля — SoulStats", recipients=[email])
         msg.html = html_body
@@ -670,7 +671,7 @@ def remind_users():
 
 
 # Запуск фонового планировщика (для тестового использования)
-def start_background_scheduler():
+def start_test_scheduler():
     end_old_chats()
 
     scheduler = BackgroundScheduler()
@@ -679,7 +680,7 @@ def start_background_scheduler():
 
 
 # Запуск блокирующего планировщика (для продакшн использования)
-def start_blocking_scheduler():
+def start_production_scheduler():
     end_old_chats()
 
     scheduler = BlockingScheduler()
@@ -689,5 +690,5 @@ def start_blocking_scheduler():
 
 
 if __name__ == '__main__':
-    start_background_scheduler()
+    start_test_scheduler()
     app.run(debug=True)
