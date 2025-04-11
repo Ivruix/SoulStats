@@ -47,10 +47,6 @@ app.config['MAIL_PASSWORD'] = MAIL_PASS
 app.config['MAIL_DEFAULT_SENDER'] = 'thegoomba4@gmail.com'
 mail = Mail(app)
 
-# Шаблон письма для ежедневного напоминания
-with open("templates/email_reminder_template.html", encoding="utf-8") as f:
-    html_template = f.read()
-
 MAX_PAID_GPT_MESSAGES = 10
 
 
