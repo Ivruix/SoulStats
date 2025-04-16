@@ -5,7 +5,7 @@
     <h2 class="stats-title">Статистика уровня счастья</h2>
     <div class="stats-charts">
         <!-- Уровень счастья по периодам -->
-        <div class="stats-chart-box">
+        <div class="stats-chart-box chart-box">
             <div class="stats-filter-buttons">
                 <button onclick="drawHappinessByPeriod('week')">Неделя</button>
                 <button onclick="drawHappinessByPeriod('month')">Месяц</button>
@@ -15,17 +15,17 @@
         </div>
 
         <!-- Средний по дням недели -->
-        <div class="stats-chart-box">
+        <div class="stats-chart-box chart-box">
             <div id="happiness-day-chart" class="stats-chart"></div>
         </div>
 
         <!-- Средний по эмоциям -->
-        <div class="stats-chart-box">
+        <div class="stats-chart-box chart-box">
             <div id="happiness-emotion-chart" class="stats-chart"></div>
         </div>
 
         <!-- Частота эмоций по периодам -->
-        <div class="stats-chart-box">
+        <div class="stats-chart-box chart-box">
             <div class="stats-filter-buttons">
 <!--            <button onclick="drawEmotionFrequencyChart('week')">Неделя</button>-->
                 <button onclick="drawEmotionFrequencyChart('month')">Месяц</button>

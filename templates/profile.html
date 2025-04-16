@@ -1,37 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Профиль пользователя{% endblock %}
 {% block content %}
-<div style="max-width: 600px; width: 100%;">
-    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; text-align: center;">Профиль пользователя</h2>
-    <div style="background: #25253a; padding: 30px; border-radius: 15px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);">
-        <div style="margin: 20px 0;">
-            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
-                <span style="font-weight: 500; color: #a0a0c0;">Имя пользователя:</span><br>{{ username }}
+<div class="profile-wrapper">
+    <h2 class="profile-title">Профиль пользователя</h2>
+    <div class="profile-box">
+        <div class="profile-section">
+            <div class="profile-item">
+                <span class="profile-label">Имя пользователя:</span><br>{{ username }}
             </div>
-            <div style="margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px;">
-                <span style="font-weight: 500; color: #a0a0c0;">ID:</span><br>{{ user_id }}
+            <div class="profile-item">
+                <span class="profile-label">ID:</span><br>{{ user_id }}
             </div>
-            <div style="display: flex; margin: 15px 0; padding: 10px; background: #3b3b5a; border-radius: 10px; flex-direction: column; gap: 0.25rem;">
-                <span style="font-weight: 500; color: #a0a0c0;">Факты:</span><br>
-                <div id="facts-container" style="margin-top: 10px;">
+            <div class="profile-item profile-facts">
+                <span class="profile-label">Факты:</span><br>
+                <div id="facts-container" class="facts-list">
                     {% if facts %}
                         {% for fact in facts %}
-                            <div data-fact-id="{{ fact.fact_id }}" style="margin: 5px 0; padding: 8px; background: #4a90e2; color: #ffffff; border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                            <div class="fact" data-fact-id="{{ fact.fact_id }}">
                                 <span>{{ fact.content }}</span>
-                                <div style="display: flex; gap: 0rem;">
-                                    <button onclick="editFact({{ fact.fact_id }})" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✏️</button>
-                                    <button onclick="deleteFact({{ fact.fact_id }})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; padding: 0 8px;">✖</button>
+                                <div class="fact-buttons">
+                                    <button onclick="editFact({{ fact.fact_id }})" class="edit-btn">✏️</button>
+                                    <button onclick="deleteFact({{ fact.fact_id }})" class="delete-btn">✖</button>
                                 </div>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p style="color: #a0a0c0;">Фактов пока нет.</p>
+                        <p class="no-facts">Фактов пока нет.</p>
                     {% endif %}
                 </div>
-                <button id="add-fact-btn" style="margin-top: 10px; padding: 8px 12px; background: #4a90e2; color: #ffffff; border: none; border-radius: 10px; cursor: pointer;">+</button>
+                <button id="add-fact-btn" class="add-fact-btn">+</button>
             </div>
         </div>
-        <a onclick="goToDashboard()" style="display: block; width: 200px; margin: 20px auto; padding: 12px; text-align: center; background: #4a90e2; color: #ffffff; text-decoration: none; border-radius: 25px; cursor: pointer; transition: background 0.3s ease;">Вернуться в чат</a>
+        <a onclick="goToDashboard()" class="back-to-chat">Вернуться в чат</a>
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>

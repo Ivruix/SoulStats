@@ -16,6 +16,16 @@ function initializeTheme() {
             `;
         }
     }
+
+    if (savedTheme === 'light') {
+        document.querySelectorAll('input, form, button').forEach(el => {
+            el.classList.add('light');
+        });
+    } else {
+        document.querySelectorAll('input, form, button').forEach(el => {
+            el.classList.remove('light');
+        });
+    }
 }
 
 function toggleTheme() {
@@ -24,6 +34,12 @@ function toggleTheme() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     body.classList.remove(currentTheme);
     body.classList.add(newTheme);
+
+    document.querySelectorAll('input, form, button').forEach(el => {
+        el.classList.remove('light');
+        if (newTheme === 'light') el.classList.add('light');
+    });
+
     localStorage.setItem('theme', newTheme);
     const url = new URL(window.location);
     url.searchParams.set('theme', newTheme);
@@ -575,17 +591,23 @@ function drawHappinessByEmotionChart() {
                 '%{text}<extra></extra>'
         };
 
+        const isLight = document.body.classList.contains('light');
+
         const layout = {
-            title: { text: 'Средний уровень настроения по эмоциям', font: { color: '#a0a0c0' } },
-            xaxis: { title: 'Эмоция', color: '#a0a0c0' },
-            yaxis: { title: 'Средний уровень настроения', color: '#a0a0c0' },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent'
+            title: { text: 'Средний уровень настроения по эмоциям', font: { color: isLight ? '#333' : '#a0a0c0' } },
+            xaxis: { title: 'Эмоция', color: isLight ? '#333' : '#a0a0c0'  },
+            yaxis: { title: 'Средний уровень настроения', color: isLight ? '#333' : '#a0a0c0'  },
+            paper_bgcolor:  isLight ? '#fff' : 'transparent',
+            plot_bgcolor:  isLight ? '#fff' : 'transparent'
         };
 
-        Plotly.newPlot('happiness-emotion-chart', [trace], layout, {
+        const config = {
+            staticPlot: true,
+            displayModeBar: false,
             responsive: true
-        });
+        };
+
+        Plotly.newPlot('happiness-emotion-chart', [trace], layout, config);
     })
     .catch(error => {
         console.error('Ошибка при загрузке данных по эмоциям:', error);
@@ -595,7 +617,6 @@ function drawHappinessByEmotionChart() {
 
 
 function drawEmotionFrequencyChart(period = 'all') {
-    console.log('drawEmotionFrequencyChart called with period:', period);
     const token = localStorage.getItem("token");
 
     fetch(`/get_emotions_by_period?period=${period}`, {
@@ -643,7 +664,6 @@ function drawEmotionFrequencyChart(period = 'all') {
             showlegend: false
         };
 
-        // Генерация уникальных эмоций и цветов для легенды
         const legendMap = {};
         for (let i = 0; i < data.emotions.length; i++) {
             const emotion = data.emotions[i];
@@ -667,11 +687,13 @@ function drawEmotionFrequencyChart(period = 'all') {
             hoverinfo: 'none'
         }));
 
+        const isLight = document.body.classList.contains('light');
+
         const layout = {
-            title: { text: 'Частота эмоций по периодам', font: { color: '#a0a0c0' } },
+            title: { text: 'Частота эмоций по периодам', font: { color: isLight ? '#333' : '#a0a0c0' } },
             xaxis: {
                 title: 'Неделя',
-                color: '#a0a0c0',
+                color: isLight ? '#333' : '#a0a0c0',
                 dtick: 1,
                 showgrid: false
             },
@@ -680,11 +702,11 @@ function drawEmotionFrequencyChart(period = 'all') {
                 categoryorder: 'array',
                 categoryarray: ['Пн.', 'Вт.', 'Ср.', 'Чт.', 'Пт.', 'Сб.', 'Вс.'],
                 autorange: 'reversed',
-                color: '#a0a0c0',
+               color: isLight ? '#333' : '#a0a0c0',
                 showgrid: false
             },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent',
+            paper_bgcolor: isLight ? '#fff' : 'transparent',
+            plot_bgcolor: isLight ? '#fff' : 'transparent',
             legend: {
                 orientation: 'h',
                 x: 0,
@@ -717,18 +739,30 @@ function drawHappinessByPeriod(period = 'all') {
         return response.json();
     })
     .then(data => {
+        const isLight = document.body.classList.contains('light');
+
         const trace = {
             x: data.dates,
             y: data.levels,
             mode: 'lines+markers',
-            line: { color: 'white', shape: 'spline' },
+            line: { color: isLight ? '#333' : 'white', shape: 'spline' },
             marker: {
                 size: 8,
                 symbol: 'circle',
-                color: data.levels.map(level => level >= 4 ? '#4CAF50' : level >= 3 ? '#FF9800' : '#F44336')
+                color: data.levels.map(level =>
+                    level >= 4 ? '#4CAF50' : level >= 3 ? '#FF9800' : '#F44336'
+                )
             },
             text: data.emojis,
             hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
+        };
+
+        const layout = {
+            title: { text: 'Уровень счастья по периодам', font: { color: isLight ? '#333' : '#a0a0c0' } },
+            xaxis: { title: 'Период', color: isLight ? '#333' : '#a0a0c0' },
+            yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' },
+            paper_bgcolor: isLight ? '#ffffff' : 'transparent',
+            plot_bgcolor: isLight ? '#ffffff' : 'transparent'
         };
 
         const config = {
@@ -737,19 +771,12 @@ function drawHappinessByPeriod(period = 'all') {
             responsive: true
         };
 
-        Plotly.newPlot('happiness-period-chart', [trace], {
-            title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
-            xaxis: { title: 'Период', color: '#a0a0c0' },
-            yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent'
-        }, config);
+        Plotly.newPlot('happiness-period-chart', [trace], layout, config);
     })
     .catch(error => {
         console.error('Ошибка при загрузке данных по периодам:', error);
     });
 }
-
 
 // Stats Functions
 function initializeStats(token) {
@@ -794,13 +821,21 @@ function initializeStats(token) {
                 hovertemplate: '%{text}<br>Дата: %{x}<br>Уровень: %{y}<extra></extra>'
             };
 
+            const config = {
+                staticPlot: true,
+                displayModeBar: false,
+                responsive: true
+            };
+
+            const isLight = document.body.classList.contains('light');
+
             Plotly.newPlot('happiness-period-chart', [periodTrace], {
-                title: { text: 'Уровень счастья по периодам', font: { color: '#a0a0c0' } },
-                xaxis: { title: 'Период', color: '#a0a0c0', showgrid: false },
-                yaxis: { title: 'Уровень счастья', color: '#a0a0c0', showgrid: false },
-                paper_bgcolor: 'transparent',
-                plot_bgcolor: 'transparent'
-            });
+                title: { text: 'Уровень счастья по периодам', font: { color: isLight ? '#333' : '#a0a0c0' }  },
+                xaxis: { title: 'Период', color: isLight ? '#333' : '#a0a0c0', showgrid: false },
+                yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' , showgrid: false },
+                paper_bgcolor: isLight ? '#fff' : 'transparent',
+                plot_bgcolor: isLight ? '#fff' : 'transparent'
+            }, config);
         })
         .catch(error => {
             console.error('Ошибка при загрузке данных по периодам:', error);
@@ -829,13 +864,21 @@ function initializeStats(token) {
                 hovertemplate: '%{text}<br>День: %{x}<br>Уровень: %{y}<extra></extra>'
             };
 
+            const config = {
+                staticPlot: true,
+                displayModeBar: false,
+                responsive: true
+            };
+
+            const isLight = document.body.classList.contains('light');
+
             Plotly.newPlot('happiness-day-chart', [dayTrace], {
-                title: { text: 'Средний уровень счастья по дням недели', font: { color: '#a0a0c0' } },
-                xaxis: { title: 'День недели', color: '#a0a0c0' },
-                yaxis: { title: 'Уровень счастья', color: '#a0a0c0' },
-                paper_bgcolor: 'transparent',
-                plot_bgcolor: 'transparent'
-            });
+                title: { text: 'Средний уровень счастья по дням недели', font: { color: isLight ? '#333' : '#a0a0c0' }  },
+                xaxis: { title: 'День недели', color: isLight ? '#333' : '#a0a0c0' },
+                yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' },
+                paper_bgcolor: isLight ? '#fff' : 'transparent',
+                plot_bgcolor: isLight ? '#fff' : 'transparent'
+            }, config);
         })
         .catch(error => {
             console.error('Ошибка при загрузке данных по дням недели:', error);

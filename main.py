@@ -332,7 +332,7 @@ def delete_fact_route():
 
     try:
         fact_user_id = Fact.get_user_id_by_fact_id(fact_id)
-        if not fact_user_id or fact_user_id[0] != user_id:
+        if not fact_user_id or fact_user_id != user_id:
             return jsonify({"status": "error", "message": "Нет доступа к факту"}), 403
 
         Fact.delete_fact(fact_id)
@@ -509,12 +509,14 @@ def get_emotions_by_period():
         data = Stats.get_emotions_by_period(user_id, period)
         if not data:
             return jsonify({
+                'dates': [],
                 'weeks': [],
                 'days': [],
                 'emotions': [],
                 'colors': []
             })
 
+        dates = [row[0].strftime('%Y-%m-%d') for row in data]
         weeks = []
         days = []
         emotions = []
@@ -554,6 +556,7 @@ def get_emotions_by_period():
             colors.append(color_map.get(emotion.lower(), '#607D8B'))
 
         return jsonify({
+            'dates': dates,
             'weeks': weeks,
             'days': days,
             'emotions': emotions,

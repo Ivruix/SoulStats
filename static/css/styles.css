@@ -21,6 +21,13 @@ body.stats-page {
     min-height: 100vh;
 }
 
+.chart-box {
+    background: #25253a;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
 .content-block {
     background: rgba(37, 37, 58, 0.8);
     padding: 4rem 1rem;
@@ -146,6 +153,93 @@ body.stats-page {
     cursor: pointer;
     font-size: 1.2rem;
     padding: 0 8px;
+}
+
+.facts-list {
+  margin-top: 10px;
+}
+
+.fact {
+  margin: 5px 0;
+  padding: 8px;
+  background: #4a90e2;
+  color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.light .fact {
+  background: #cce4ff;
+  color: #000;
+}
+
+.fact-buttons button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  color: #ffffff;
+}
+.delete-btn {
+  color: #ff4444;
+}
+
+body.light .edit-btn {
+  color: #000;
+}
+
+.add-fact-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #4a90e2;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+body.light .add-fact-btn {
+  background: #4a90e2;
+  color: #fff;
+}
+
+.no-facts {
+  color: #a0a0c0;
+}
+
+body.light .no-facts {
+  color: #666;
+}
+
+.back-to-chat {
+  display: block;
+  width: 200px;
+  margin: 20px auto;
+  padding: 12px;
+  text-align: center;
+  background: #4a90e2;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+body.light .back-to-chat {
+  background: #4a90e2;
+  color: #fff;
+}
+
+
+body.light .chart-box {
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Positioning and Layout (Shared Across Themes) */
@@ -415,6 +509,54 @@ header h1 {
     margin-left: 10px;
 }
 
+.profile-wrapper {
+  max-width: 600px;
+  width: 100%;
+}
+
+.profile-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.profile-box {
+  background: #25253a;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+body.light .profile-box {
+  background: #f0f0f5;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.profile-section {
+  margin: 20px 0;
+}
+
+.profile-item {
+  margin: 15px 0;
+  padding: 10px;
+  background: #3b3b5a;
+  border-radius: 10px;
+}
+
+body.light .profile-item {
+  background: #ffffff;
+}
+
+.profile-label {
+  font-weight: 500;
+  color: #a0a0c0;
+}
+
+body.light .profile-label {
+  color: #444;
+}
+
 footer {
     color: #a0a0c0;
     text-align: center;
@@ -434,6 +576,18 @@ footer p {
     align-items: center;
 }
 
+.logo-dark {
+    display: block;
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+.logo-light {
+    display: none;
+    width: 100px;
+    margin-bottom: 20px;
+}
+
 .stats-container {
     max-width: 1200px;
     width: 100%;
@@ -446,6 +600,27 @@ footer p {
     font-weight: 600;
     margin-bottom: 20px;
     text-align: center;
+}
+
+.form-input {
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: #1e1e2f;
+    color: #e0e0e0;
+    outline: none;
+    width: 100%;
+}
+
+.form-button {
+    padding: 12px;
+    border-radius: 25px;
+    background: #4a90e2;
+    color: #ffffff;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
 }
 
 .stats-charts {
@@ -639,6 +814,18 @@ body.dark .limit-message {
     background: rgba(0, 0, 0, 0.2);
 }
 
+body.light .limit-message,
+body.light .welcome-message {
+    color: #333333;
+    background: #f0f0f0;
+    border: 2px solid #cccccc;
+}
+
+body.light .form-button {
+    background: #007bff;
+    color: white;
+}
+
 body.dark .input-container {
     background: #2a2a3f;
     border-top: 1px solid #3b3b5a;
@@ -765,7 +952,28 @@ body.dark .cancel-btn:hover {
     background: #4a4a70;
 }
 
+body.dark .logo-dark {
+    display: block;
+}
+
+body.dark .logo-light {
+    display: none;
+}
+
 /* Light Theme */
+body.light .logo-dark {
+    display: none;
+}
+
+body.light .logo-light {
+    display: block;
+}
+
+body.light .logo-position img {
+    width: 100px;
+    margin-bottom: 20px;
+}
+
 body.light {
     background: linear-gradient(135deg, #f0f4f8 0%, #f5f5f5 100%);
     color: #333333;
@@ -788,6 +996,12 @@ body.light .message.user {
 
 body.light .message.assistant {
     background: #e0e0e0;
+}
+
+body.light .form-input {
+    background: #ffffff;
+    color: #222222;
+    border: 1px solid #cccccc;
 }
 
 body.light .message-time {
@@ -931,6 +1145,50 @@ body.light .cancel-btn {
 body.light .cancel-btn:hover {
     background: #cccccc;
 }
+
+body.light input[type="text"],
+body.light input[type="password"],
+body.light input[type="email"] {
+    background: #ffffff;
+    color: #333333;
+    border: 1px solid #cccccc;
+    border-radius: 25px;
+    padding: 12px;
+    outline: none;
+}
+
+body.light input::placeholder {
+    color: #999999;
+}
+
+body.light input:focus {
+    background: #f0f4f8;
+    border-color: #4a90e2;
+}
+
+body.light form button {
+    background: #4a90e2;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+body.light form button:hover {
+    background: #357abd;
+}
+
+body.light .reset-message,
+body.light .flash-message,
+body.light .form-message {
+    background: #e0e0e0;
+    color: #333333;
+    border-radius: 10px;
+    padding: 10px;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
