@@ -758,9 +758,9 @@ function drawHappinessByPeriod(period = 'all') {
         };
 
         const layout = {
-            title: { text: 'Уровень счастья по периодам', font: { color: isLight ? '#333' : '#a0a0c0' } },
+            title: { text: 'Уровень настроения по периодам', font: { color: isLight ? '#333' : '#a0a0c0' } },
             xaxis: { title: 'Период', color: isLight ? '#333' : '#a0a0c0' },
-            yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' },
+            yaxis: { title: 'Уровень настроения', color: isLight ? '#333' : '#a0a0c0' },
             paper_bgcolor: isLight ? '#ffffff' : 'transparent',
             plot_bgcolor: isLight ? '#ffffff' : 'transparent'
         };
@@ -830,9 +830,9 @@ function initializeStats(token) {
             const isLight = document.body.classList.contains('light');
 
             Plotly.newPlot('happiness-period-chart', [periodTrace], {
-                title: { text: 'Уровень счастья по периодам', font: { color: isLight ? '#333' : '#a0a0c0' }  },
+                title: { text: 'Уровень настроения по периодам', font: { color: isLight ? '#333' : '#a0a0c0' }  },
                 xaxis: { title: 'Период', color: isLight ? '#333' : '#a0a0c0', showgrid: false },
-                yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' , showgrid: false },
+                yaxis: { title: 'Уровень настроения', color: isLight ? '#333' : '#a0a0c0' , showgrid: false },
                 paper_bgcolor: isLight ? '#fff' : 'transparent',
                 plot_bgcolor: isLight ? '#fff' : 'transparent'
             }, config);
@@ -873,9 +873,9 @@ function initializeStats(token) {
             const isLight = document.body.classList.contains('light');
 
             Plotly.newPlot('happiness-day-chart', [dayTrace], {
-                title: { text: 'Средний уровень счастья по дням недели', font: { color: isLight ? '#333' : '#a0a0c0' }  },
+                title: { text: 'Средний уровень настроения по дням недели', font: { color: isLight ? '#333' : '#a0a0c0' }  },
                 xaxis: { title: 'День недели', color: isLight ? '#333' : '#a0a0c0' },
-                yaxis: { title: 'Уровень счастья', color: isLight ? '#333' : '#a0a0c0' },
+                yaxis: { title: 'Уровень настроения', color: isLight ? '#333' : '#a0a0c0' },
                 paper_bgcolor: isLight ? '#fff' : 'transparent',
                 plot_bgcolor: isLight ? '#fff' : 'transparent'
             }, config);
