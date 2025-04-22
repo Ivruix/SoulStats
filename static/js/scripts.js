@@ -943,8 +943,8 @@ function toggleRecording() {
                 audioChunks = [];
                 mediaRecorder.start();
                 isRecording = true;
+                recordButton.textContent = "🔴";
                 recordButton.style.backgroundColor = "red";
-                recordButton.textContent = "⏺️ Запись...";
 
                 mediaRecorder.addEventListener("dataavailable", event => {
                     audioChunks.push(event.data);
@@ -957,7 +957,8 @@ function toggleRecording() {
                     const formData = new FormData();
                     formData.append("voice", audioBlob, "voice_recording.wav");
 
-                    recordButton.textContent = "⏳ Распознавание...";
+                    recordButton.textContent = "⏳";
+                    recordButton.style.backgroundColor = "#4CAF50";
                     fetch('/transcribe-voice', {
                         method: 'POST',
                         headers: {
@@ -977,8 +978,8 @@ function toggleRecording() {
                         console.error("Ошибка при распознавании голосового сообщения:", error);
                     })
                     .finally(() => {
-                        recordButton.style.backgroundColor = "";
                         recordButton.textContent = "🎤";
+                        recordButton.style.backgroundColor = "#4A90E2";
                     });
                 });
             })
@@ -989,8 +990,8 @@ function toggleRecording() {
     } else {
         mediaRecorder.stop();
         isRecording = false;
-        recordButton.style.backgroundColor = "";
         recordButton.textContent = "🎤";
+        recordButton.style.backgroundColor = "#4A90E2";
     }
 }
 
