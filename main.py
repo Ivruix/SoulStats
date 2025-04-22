@@ -12,7 +12,7 @@ from flask_mail import Message as FlaskMessage
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
 from ml_backend.utils import analyze_chat, get_next_question, should_extend_chat
-# from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
+from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
 
 from db.user_data import UserData
 from db.message import Message
