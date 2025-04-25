@@ -349,7 +349,7 @@ function initializeProfile(token) {
                     const factDivs = document.querySelectorAll('[data-fact-id]');
                     if (factDivs.length === 0) {
                         const factsContainer = document.querySelector('div[style*="Факты:"] > div');
-                        factsContainer.innerHTML = '<p style="color: #a0a0c0;">Фактов пока нет.</p>';
+                        // factsContainer.innerHTML = '<p style="color: #a0a0c0;">Фактов пока нет.</p>';
                     }
                 } else {
                     alert('Ошибка при удалении факта: ' + data.message);
