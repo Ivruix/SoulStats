@@ -15,7 +15,7 @@
     <form action="/register" method="post" style="display: flex; flex-direction: column; gap: 15px;">
         <input type="text" name="username" placeholder="Введите никнейм" class="form-input">
         <input type="email" name="email" placeholder="Введите почту" class="form-input">
-        <input type="password" name="password" placeholder="Введите пароль" class="form-input">
+        <input type="password" name="password" placeholder="Введите пароль" class="form-input" minlength="8" required title="Пароль должен содержать минимум 8 символов">
         <button type="submit" style="background: #4a90e2; color: #ffffff; border: none; padding: 12px; border-radius: 25px; cursor: pointer; font-size: 1rem;">Зарегистрироваться</button>
     </form>
     <div style="margin-top: 15px; font-size: 0.9rem; text-align: center;">
