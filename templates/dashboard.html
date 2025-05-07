@@ -176,5 +176,22 @@
             }
         };
     </script>
+    <script>
+        const messages = [
+            "Привет! Как прошел ваш день?",
+            "Здравствуйте! Что нового?",
+            "Привет! Как настроение?",
+            "Привет! Как ваши дела?"
+        ];
+
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const welcomeMessageElement = document.getElementById("welcome-message");
+            if (welcomeMessageElement) {
+                welcomeMessageElement.innerHTML = `<p>${randomMessage}</p>`;
+            }
+        });
+    </script>
 </body>
 </html>
