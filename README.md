@@ -1,6 +1,7 @@
 # <img src="https://i.ibb.co/bj2TPM92/logo.png" width="32"/> SoulStats - умный дневник
 
 Доступен по адресу: https://soulstats.ru
+Telegram канал с новостями: https://t.me/soulstats_channel
 
 ## Краткое описание
 
