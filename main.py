@@ -716,7 +716,7 @@ def start_production_scheduler():
     end_old_chats()
 
     scheduler = BlockingScheduler()
-    scheduler.add_job(remind_users, 'cron', hour=14, minute=53)
+    scheduler.add_job(remind_users, 'cron', hour=20, minute=00)
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 
