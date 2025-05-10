@@ -661,7 +661,7 @@ def send_reminder_email(user_id, username, email):
     with app.app_context():
         link = f"https://soulstats.ru/dashboard?token={create_jwt_token(user_id, username)}"
         unsubscribe_token = generate_unsubscribe_token(email)
-        unsubscribe_url = f"http://127.0.0.1:5000/unsubscribe?token={unsubscribe_token}"
+        unsubscribe_url = f"https://soulstats.ru/unsubscribe?token={unsubscribe_token}"
 
         with open("templates/email_reminder_template.html", encoding="utf-8") as template_file:
             template = template_file.read()
