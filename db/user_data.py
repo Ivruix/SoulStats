@@ -83,3 +83,12 @@ class UserData:
         conn.commit()
         cur.close()
         conn.close()
+
+    @staticmethod
+    def unsubscribe_user(email):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE user_data SET email = %s WHERE email = %s", ('$unsub_' + email, email))
+        conn.commit()
+        cur.close()
+        conn.close()
