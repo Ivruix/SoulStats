@@ -14,7 +14,7 @@ from flask_mail import Message as FlaskMessage
 from jwt_utils import create_jwt_token, jwt_required, decode_jwt_token
 
 from ml_backend.utils import analyze_chat, get_next_question, should_extend_chat
-from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
+# from ml_backend.speech_recognition.whisper_singleton import WhisperRecognizer
 
 from db.user_data import UserData
 from db.message import Message
@@ -301,9 +301,7 @@ def chat_ended(chat_id):
 @app.route('/profile')
 @jwt_required
 def profile():
-    # Получаем user_id из JWT токена
     user_id = request.user_id
-    # Получаем данные пользователя из базы данных
     user_data = UserData.get_user(user_id)
 
     if not user_data:
@@ -313,19 +311,22 @@ def profile():
     # Распаковываем данные
     user_id, username, created_at = user_data
 
+    email = UserData.get_email_by_user_id(user_id)
+
+    is_subscribed = True
+
+    if email.startswith('$unsub_'):
+        is_subscribed = False
+
     # Получаем факты с их fact_id
     facts = Fact.get_facts_by_user(user_id)
-
-    # Получаем токен из query-параметра
     token = request.args.get('token')
-
-    # Передаем данные в шаблон
     return render_template('profile.html',
                            user_id=user_id,
                            username=username,
                            facts=facts,
-                           token=token)
-
+                           token=token,
+                           is_subscribed=is_subscribed)
 
 @app.route('/delete-fact', methods=['POST'])
 @jwt_required
@@ -385,6 +386,40 @@ def update_fact():
         return jsonify({"status": "success", "message": "Факт обновлён"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/update_subscription', methods=['POST'])
+@jwt_required
+def update_subscription():
+    user_id = request.user_id
+    data = request.get_json()
+    if not data or 'subscribe' not in data:
+        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+
+    subscribe = data['subscribe']
+    user_data = UserData.get_user(user_id)
+    if not user_data:
+        return jsonify({"status": "error", "message": "Пользователь не найден"}), 404
+
+    # Распаковываем данные
+    user_id, username, created_at = user_data
+
+    email = UserData.get_email_by_user_id(user_id)
+    subscribe = True
+
+    if email.startswith('$unsub_'):
+        subscribe = False
+
+    if subscribe:
+        new_email = '$unsub_' + email
+    else:
+        new_email = email.replace('$unsub_', '')
+
+    try:
+        print(user_id, email, new_email)
+        UserData.update_email(user_id, new_email)
+        return jsonify({"status": "success", "message": "Настройки обновлены"})
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
 @app.route('/stats')

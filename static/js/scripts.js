@@ -65,7 +65,7 @@ function initializeDashboard(token, userId, chatId) {
         localStorage.setItem("token", token);
     }
 
-        window.onload = function () {
+    window.onload = function () {
         const messages = document.getElementById("messages");
         messages.scrollTop = messages.scrollHeight;
     };
@@ -81,21 +81,21 @@ function initializeDashboard(token, userId, chatId) {
         hamburgerHeadBtn.textContent = sidebar.classList.contains('hidden') ? '☰' : '✖';
     };
 
-function adjustMainPadding() {
-    const inputContainer = document.getElementById('input-container');
-    const main = document.querySelector('main');
-    const sidebarButtons = document.querySelector('.header-buttons');
+    function adjustMainPadding() {
+        const inputContainer = document.getElementById('input-container');
+        const main = document.querySelector('main');
+        const sidebarButtons = document.querySelector('.header-buttons');
 
-    if (inputContainer && main) {
-        const height = inputContainer.offsetHeight;
-        main.style.paddingBottom = `${height + 40}px`;
-    }
+        if (inputContainer && main) {
+            const height = inputContainer.offsetHeight;
+            main.style.paddingBottom = `${height + 40}px`;
+        }
 
-    if (sidebarButtons) {
-        const height = inputContainer.offsetHeight;
-        sidebarButtons.style.paddingBottom = `${height + 10}px`;
+        if (sidebarButtons) {
+            const height = inputContainer.offsetHeight;
+            sidebarButtons.style.paddingBottom = `${height + 10}px`;
+        }
     }
-}
 
     function checkMessageLimit(chatId) {
         fetch(`/get-messages/${chatId}`, {
@@ -292,16 +292,14 @@ function adjustMainPadding() {
     }
 
     window.addEventListener('resize', () => {
-    const sidebar = document.getElementById('sidebar');
-    if (window.innerWidth >= 760) {
-        sidebar.classList.remove('hidden');
-    } else {
-    sidebar.classList.add('hidden');}
+        const sidebar = document.getElementById('sidebar');
+        if (window.innerWidth >= 760) {
+            sidebar.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('hidden');
+        }
     });
 
-
-
-    // Вызов при загрузке и изменении размера окна
     window.addEventListener('load', adjustMainPadding);
     window.addEventListener('resize', adjustMainPadding);
 }
@@ -527,8 +525,41 @@ function initializeProfile(token) {
         });
     };
 
-    // Привязка обработчика к кнопке "+"
+    function updateSubscription(isSubscribed) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert('Токен отсутствует. Пожалуйста, войдите снова.');
+            window.location.href = '/login';
+            return;
+        }
+
+        fetch('/update_subscription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ subscribe: isSubscribed })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Настройки обновлены.');
+            } else {
+                alert('Ошибка при обновлении настроек: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении настроек.');
+        });
+    }
+
     document.getElementById('add-fact-btn').addEventListener('click', addFact);
+    document.getElementById('email-reminders').addEventListener('change', function() {
+        const isSubscribed = this.checked;
+        updateSubscription(isSubscribed);
+    });
 }
 
 function drawHappinessByEmotionChart() {

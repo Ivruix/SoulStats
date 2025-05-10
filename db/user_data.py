@@ -46,6 +46,10 @@ class UserData:
         # Проверяем, существует ли пользователь с таким email или username
         conn = get_connection()
         cur = conn.cursor()
+
+        if '$unsub_' in email:
+            return False
+
         cur.execute("SELECT * FROM user_data WHERE email = %s OR username = %s", (email, username))
         existing_user = cur.fetchone()
         cur.close()
@@ -76,6 +80,16 @@ class UserData:
         return user
 
     @staticmethod
+    def get_email_by_user_id(user_id):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT email FROM user_data WHERE user_id = %s", (user_id,))
+        email = cur.fetchone()
+        cur.close()
+        conn.close()
+        return email[0] if email else None
+
+    @staticmethod
     def update_password(user_id, new_password_hash):
         conn = get_connection()
         cur = conn.cursor()
@@ -89,6 +103,15 @@ class UserData:
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("UPDATE user_data SET email = %s WHERE email = %s", ('$unsub_' + email, email))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    @staticmethod
+    def update_email(user_id, new_email):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE user_data SET email = %s WHERE user_id = %s", (new_email, user_id))
         conn.commit()
         cur.close()
         conn.close()
