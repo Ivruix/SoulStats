@@ -30,6 +30,10 @@
                 </div>
                 <button id="add-fact-btn" class="add-fact-btn">+</button>
             </div>
+            <div class="profile-item">
+                <label for="email-reminders">Напоминания на почту</label>
+                <input type="checkbox" id="email-reminders" name="email-reminders" {% if is_subscribed %}checked{% endif %}>
+            </div>
         </div>
         <a onclick="goToDashboard()" class="back-to-chat">Вернуться в чат</a>
     </div>

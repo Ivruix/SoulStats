@@ -1,5 +1,7 @@
 import os
 import datetime
+from urllib.parse import quote
+
 import bcrypt
 import jwt
 
@@ -141,7 +143,12 @@ def register():
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
+
         user = UserData.get_user_by_email(email)
+
+        if not user:
+            email = '$unsub_' + email
+            user = UserData.get_user_by_email(email)
 
         if user:
             user_id, username = user
@@ -294,9 +301,7 @@ def chat_ended(chat_id):
 @app.route('/profile')
 @jwt_required
 def profile():
-    # Получаем user_id из JWT токена
     user_id = request.user_id
-    # Получаем данные пользователя из базы данных
     user_data = UserData.get_user(user_id)
 
     if not user_data:
@@ -306,19 +311,22 @@ def profile():
     # Распаковываем данные
     user_id, username, created_at = user_data
 
+    email = UserData.get_email_by_user_id(user_id)
+
+    is_subscribed = True
+
+    if email.startswith('$unsub_'):
+        is_subscribed = False
+
     # Получаем факты с их fact_id
     facts = Fact.get_facts_by_user(user_id)
-
-    # Получаем токен из query-параметра
     token = request.args.get('token')
-
-    # Передаем данные в шаблон
     return render_template('profile.html',
                            user_id=user_id,
                            username=username,
                            facts=facts,
-                           token=token)
-
+                           token=token,
+                           is_subscribed=is_subscribed)
 
 @app.route('/delete-fact', methods=['POST'])
 @jwt_required
@@ -378,6 +386,40 @@ def update_fact():
         return jsonify({"status": "success", "message": "Факт обновлён"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/update_subscription', methods=['POST'])
+@jwt_required
+def update_subscription():
+    user_id = request.user_id
+    data = request.get_json()
+    if not data or 'subscribe' not in data:
+        return jsonify({"status": "error", "message": "Неверные данные"}), 400
+
+    subscribe = data['subscribe']
+    user_data = UserData.get_user(user_id)
+    if not user_data:
+        return jsonify({"status": "error", "message": "Пользователь не найден"}), 404
+
+    # Распаковываем данные
+    user_id, username, created_at = user_data
+
+    email = UserData.get_email_by_user_id(user_id)
+    subscribe = True
+
+    if email.startswith('$unsub_'):
+        subscribe = False
+
+    if subscribe:
+        new_email = '$unsub_' + email
+    else:
+        new_email = email.replace('$unsub_', '')
+
+    try:
+        print(user_id, email, new_email)
+        UserData.update_email(user_id, new_email)
+        return jsonify({"status": "success", "message": "Настройки обновлены"})
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
 @app.route('/stats')
@@ -613,6 +655,29 @@ def logout():
     </html>
     """
 
+def generate_unsubscribe_token(email):
+    payload = {
+        "email": email,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
+    }
+    token = jwt.encode(payload, app.secret_key, algorithm="HS256")
+    return token
+
+@app.route('/unsubscribe', methods=['GET'])
+def unsubscribe():
+    token = request.args.get('token')
+    if not token:
+        return "Неверный запрос", 400
+
+    try:
+        payload = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+        email = payload["email"]
+        UserData.unsubscribe_user(email)
+        return "Вы успешно отписались от уведомлений."
+    except jwt.ExpiredSignatureError:
+        return "Токен истёк", 400
+    except jwt.InvalidTokenError:
+        return "Неверный токен", 400
 
 def end_old_chats():
     print("Ending old chats...")
@@ -630,12 +695,13 @@ def end_old_chats():
 def send_reminder_email(user_id, username, email):
     with app.app_context():
         link = f"https://soulstats.ru/dashboard?token={create_jwt_token(user_id, username)}"
+        unsubscribe_token = generate_unsubscribe_token(email)
+        unsubscribe_url = f"https://soulstats.ru/unsubscribe?token={unsubscribe_token}"
 
         with open("templates/email_reminder_template.html", encoding="utf-8") as template_file:
             template = template_file.read()
 
-        html_body = render_template_string(template, username=username, url=link)
-
+        html_body = render_template_string(template, username=username, url=link, unsubscribe_url=unsubscribe_url)
         msg = FlaskMessage(subject="Обновление в SoulStats 💬", recipients=[email])
         msg.html = html_body
         mail.send(msg)
@@ -643,11 +709,7 @@ def send_reminder_email(user_id, username, email):
 
 def send_reset_password_email(user_id, username, email):
     with app.app_context():
-        token = jwt.encode({
-            'user_id': user_id,
-            'username': username,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-        }, os.getenv('JWT_SECRET'), algorithm="HS256")
+        token = create_jwt_token(user_id, username)
 
         reset_link = url_for('reset_password', token=token, _external=True)
 
@@ -655,6 +717,9 @@ def send_reset_password_email(user_id, username, email):
             template = template_file.read()
 
         html_body = render_template_string(template, username=username, url=reset_link)
+
+        if '$unsub_' in email:
+            email = email.replace('$unsub_', '')
 
         msg = FlaskMessage(subject="Восстановление пароля — SoulStats", recipients=[email])
         msg.html = html_body
@@ -664,6 +729,8 @@ def send_reset_password_email(user_id, username, email):
 def remind_users():
     users = UserData.get_all_users()
     for user_id, username, email in users:
+        if '$unsub_' in email:
+            continue
         latest = Chat.get_latest_chat(user_id)
 
         if not latest or latest[1] != datetime.date.today():
@@ -684,7 +751,7 @@ def start_production_scheduler():
     end_old_chats()
 
     scheduler = BlockingScheduler()
-    scheduler.add_job(remind_users, 'cron', hour=21)
+    scheduler.add_job(remind_users, 'cron', hour=20, minute=00)
     scheduler.add_job(end_old_chats, 'interval', hours=1)
     scheduler.start()
 
